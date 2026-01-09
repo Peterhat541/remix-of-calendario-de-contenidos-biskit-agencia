@@ -1,0 +1,317 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    /* Like a Rocket Brand Colors */
+    --background: 180 33% 97%;
+    --foreground: 220 13% 18%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 13% 18%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 18%;
+
+    /* Rosa Like a Rocket #ff018b → HSL: 328 100% 50% */
+    --primary: 328 100% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 180 33% 96%;
+    --secondary-foreground: 220 13% 18%;
+
+    --muted: 180 20% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    /* Turquesa Like a Rocket #00c4c2 → HSL: 179 100% 38% */
+    --accent: 179 100% 38%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 180 20% 90%;
+    --input: 180 20% 90%;
+    --ring: 328 100% 50%;
+
+    --radius: 0.5rem;
+
+    /* Custom tokens */
+    --surface-elevated: 0 0% 100%;
+    --text-label: 220 9% 46%;
+    --text-heading: 220 13% 13%;
+    --border-subtle: 180 20% 91%;
+    --highlight: 328 100% 50%;
+    --image-shadow: 220 13% 20%;
+    
+    /* Brand-specific tokens - Like a Rocket */
+    --brand-pink: 328 100% 50%;
+    --brand-teal: 179 100% 38%;
+    --brand-light: 180 50% 97%;
+    
+    /* Brand-specific tokens - Biskit */
+    --biskit-bg: 0 0% 0%;
+    --biskit-fg: 0 0% 100%;
+    --biskit-yellow: 54 100% 50%;
+    --biskit-yellow-hover: 54 100% 45%;
+  }
+
+  .dark {
+    --background: 220 13% 10%;
+    --foreground: 220 14% 96%;
+    --card: 220 13% 13%;
+    --card-foreground: 220 14% 96%;
+    --popover: 220 13% 13%;
+    --popover-foreground: 220 14% 96%;
+    --primary: 328 100% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 13% 18%;
+    --secondary-foreground: 220 14% 96%;
+    --muted: 220 13% 18%;
+    --muted-foreground: 220 9% 60%;
+    --accent: 179 100% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 20%;
+    --input: 220 13% 20%;
+    --ring: 328 100% 55%;
+    --surface-elevated: 220 13% 15%;
+    --text-label: 220 9% 60%;
+    --text-heading: 220 14% 96%;
+    --border-subtle: 220 13% 20%;
+    --highlight: 328 100% 55%;
+    --image-shadow: 220 13% 5%;
+    
+    /* Brand-specific tokens (dark) - Like a Rocket */
+    --brand-pink: 328 100% 55%;
+    --brand-teal: 179 100% 45%;
+    --brand-light: 220 13% 15%;
+    
+    /* Brand-specific tokens (dark) - Biskit */
+    --biskit-bg: 0 0% 0%;
+    --biskit-fg: 0 0% 100%;
+    --biskit-yellow: 54 100% 50%;
+    --biskit-yellow-hover: 54 100% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-heading font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .form-label {
+    @apply text-sm font-medium text-label mb-1.5 block;
+  }
+
+  .form-input {
+    @apply w-full px-4 py-3 text-base bg-surface-elevated border border-input rounded-md 
+           placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-highlight/20 
+           focus:border-highlight transition-colors;
+  }
+
+  .section-card {
+    @apply bg-card rounded-lg border border-border-subtle p-6 shadow-sm;
+  }
+
+  .report-block {
+    @apply bg-card rounded-lg border border-border-subtle shadow-sm overflow-hidden
+           transition-shadow duration-200;
+  }
+
+  .report-block-focused {
+    @apply ring-2 ring-highlight/20 border-highlight/50;
+  }
+
+  .report-header {
+    @apply flex items-center justify-between px-6 py-4 border-b border-border-subtle bg-muted/30;
+  }
+
+  .report-title {
+    @apply text-base font-semibold text-heading m-0 p-0 border-0;
+  }
+
+  .report-content {
+    @apply p-6;
+  }
+
+  .regenerate-btn {
+    @apply flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted-foreground 
+           bg-background border border-border rounded-md hover:bg-muted hover:text-foreground 
+           transition-colors;
+  }
+
+  .paste-hint {
+    @apply flex items-center justify-center gap-2 px-6 py-3 border-t border-border-subtle 
+           bg-muted/20;
+  }
+
+  .kbd {
+    @apply px-1.5 py-0.5 bg-muted border border-border rounded text-[10px] font-mono;
+  }
+
+  .btn-generate {
+    @apply w-full py-4 px-6 bg-primary text-primary-foreground font-semibold text-base
+           rounded-lg hover:opacity-90 transition-all shadow-md hover:shadow-lg disabled:opacity-50 
+           disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply w-full py-4 px-6 bg-card text-foreground font-semibold text-base
+           rounded-lg hover:bg-muted transition-all shadow-sm border border-border;
+  }
+
+  /* Image Gallery */
+  .image-gallery {
+    @apply px-6 pb-4 space-y-4;
+  }
+
+  .sortable-image {
+    @apply relative;
+  }
+
+  .sortable-image-dragging {
+    @apply opacity-50 z-50;
+  }
+
+  .image-container {
+    @apply relative inline-block;
+  }
+
+  .report-image {
+    @apply max-w-[600px] w-auto rounded border border-border-subtle 
+           shadow-[0_2px_8px_-2px_hsl(var(--image-shadow)/0.1)]
+           transition-shadow duration-200;
+  }
+
+  .image-actions {
+    @apply absolute top-2 right-2 flex items-center gap-1 opacity-0 
+           transition-opacity duration-200;
+  }
+
+  .sortable-image:hover .image-actions,
+  .sortable-image:focus-within .image-actions {
+    @apply opacity-100;
+  }
+
+  .drag-handle {
+    @apply p-1.5 bg-card/90 backdrop-blur-sm text-muted-foreground rounded 
+           border border-border shadow-sm cursor-grab active:cursor-grabbing
+           hover:bg-card hover:text-foreground transition-colors;
+  }
+
+  .delete-btn {
+    @apply p-1.5 bg-card/90 backdrop-blur-sm text-muted-foreground rounded 
+           border border-border shadow-sm hover:bg-destructive hover:text-destructive-foreground 
+           hover:border-destructive transition-colors;
+  }
+
+  .image-caption {
+    @apply text-xs text-muted-foreground mt-2;
+  }
+
+  /* Animation for new images */
+  @keyframes image-in {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-image-in {
+    animation: image-in 0.4s ease-out forwards;
+  }
+
+  /* Rich Text Editor Styles */
+  .rich-editor-container {
+    @apply rounded-md border border-border bg-surface-elevated overflow-hidden;
+  }
+
+  .editor-toolbar {
+    @apply flex items-center gap-1 px-3 py-2 border-b border-border bg-muted/50;
+  }
+
+  .toolbar-btn {
+    @apply p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-background 
+           transition-colors disabled:opacity-30 disabled:cursor-not-allowed;
+  }
+
+  .toolbar-btn-active {
+    @apply text-foreground bg-background;
+  }
+
+  .toolbar-divider {
+    @apply w-px h-5 bg-border mx-1;
+  }
+
+  .prose-editor {
+    @apply px-4 py-3 text-base text-foreground leading-relaxed;
+  }
+
+  .prose-editor p {
+    @apply mb-3 last:mb-0;
+  }
+
+  .prose-editor strong {
+    @apply font-semibold;
+  }
+
+  .prose-editor em {
+    @apply italic;
+  }
+
+  .prose-editor ul,
+  .prose-editor ol {
+    @apply pl-6 mb-3;
+  }
+
+  .prose-editor ul {
+    @apply list-disc;
+  }
+
+  .prose-editor ol {
+    @apply list-decimal;
+  }
+
+  .prose-editor li {
+    @apply mb-1.5;
+  }
+
+  .prose-editor a {
+    @apply text-highlight underline;
+  }
+
+  .prose-editor p.is-editor-empty:first-child::before {
+    @apply text-muted-foreground pointer-events-none float-left h-0;
+    content: attr(data-placeholder);
+  }
+}
+
+/* Print/PDF styles */
+@media print {
+  body {
+    @apply bg-white;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}
