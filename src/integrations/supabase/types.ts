@@ -17,34 +17,61 @@ export type Database = {
       calendar_contacts: {
         Row: {
           address: string | null
+          brand_notes: string | null
           company_name: string
           contact_name: string | null
           created_at: string | null
+          cta_style: string | null
           email: string | null
+          emoji_style: string | null
+          facebook_url: string | null
+          forbidden_words: string[] | null
+          google_business_url: string | null
           id: string
+          instagram_url: string | null
+          linkedin_url: string | null
           phone: string | null
+          tone_style: string | null
           updated_at: string | null
           website: string | null
         }
         Insert: {
           address?: string | null
+          brand_notes?: string | null
           company_name: string
           contact_name?: string | null
           created_at?: string | null
+          cta_style?: string | null
           email?: string | null
+          emoji_style?: string | null
+          facebook_url?: string | null
+          forbidden_words?: string[] | null
+          google_business_url?: string | null
           id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
           phone?: string | null
+          tone_style?: string | null
           updated_at?: string | null
           website?: string | null
         }
         Update: {
           address?: string | null
+          brand_notes?: string | null
           company_name?: string
           contact_name?: string | null
           created_at?: string | null
+          cta_style?: string | null
           email?: string | null
+          emoji_style?: string | null
+          facebook_url?: string | null
+          forbidden_words?: string[] | null
+          google_business_url?: string | null
           id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
           phone?: string | null
+          tone_style?: string | null
           updated_at?: string | null
           website?: string | null
         }
@@ -303,6 +330,59 @@ export type Database = {
             foreignKeyName: "content_calendars_calendar_contact_id_fkey"
             columns: ["calendar_contact_id"]
             isOneToOne: false
+            referencedRelation: "calendar_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_profiles: {
+        Row: {
+          brand_summary: string | null
+          confidence_score: number | null
+          contact_id: string
+          created_at: string
+          hashtags_base: Json | null
+          id: string
+          last_analyzed_at: string | null
+          source_data: Json | null
+          tone_guidelines: Json | null
+          updated_at: string
+          visual_style: Json | null
+          vocabulary: Json | null
+        }
+        Insert: {
+          brand_summary?: string | null
+          confidence_score?: number | null
+          contact_id: string
+          created_at?: string
+          hashtags_base?: Json | null
+          id?: string
+          last_analyzed_at?: string | null
+          source_data?: Json | null
+          tone_guidelines?: Json | null
+          updated_at?: string
+          visual_style?: Json | null
+          vocabulary?: Json | null
+        }
+        Update: {
+          brand_summary?: string | null
+          confidence_score?: number | null
+          contact_id?: string
+          created_at?: string
+          hashtags_base?: Json | null
+          id?: string
+          last_analyzed_at?: string | null
+          source_data?: Json | null
+          tone_guidelines?: Json | null
+          updated_at?: string
+          visual_style?: Json | null
+          vocabulary?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_profiles_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: true
             referencedRelation: "calendar_contacts"
             referencedColumns: ["id"]
           },
