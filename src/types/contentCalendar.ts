@@ -10,6 +10,12 @@ export interface CalendarPost {
   image: PostImage;
   title: string;
   copy: string;
+  post_format?: string;
+  theme_context?: string;
+  objective?: string;
+  ai_generated?: boolean;
+  ai_copy_prompt?: string;
+  ai_image_prompt?: string;
 }
 
 export interface CalendarMonth {
@@ -117,7 +123,10 @@ export function createEmptyPost(): CalendarPost {
       file_url: ''
     },
     title: '',
-    copy: ''
+    copy: '',
+    post_format: 'post',
+    theme_context: '',
+    objective: ''
   };
 }
 

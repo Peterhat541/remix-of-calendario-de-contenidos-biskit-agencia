@@ -10,9 +10,11 @@ interface CalendarMonthSectionProps {
   monthData: CalendarMonth;
   onUpdateMonth: (updated: CalendarMonth) => void;
   highlightPostIds?: string[];
+  channel?: string;
+  contactId?: string;
 }
 
-const CalendarMonthSection = ({ monthData, onUpdateMonth, highlightPostIds = [] }: CalendarMonthSectionProps) => {
+const CalendarMonthSection = ({ monthData, onUpdateMonth, highlightPostIds = [], channel = '', contactId }: CalendarMonthSectionProps) => {
   const handlePostsCountChange = (count: number) => {
     const currentPosts = [...monthData.posts];
     
@@ -103,6 +105,8 @@ const CalendarMonthSection = ({ monthData, onUpdateMonth, highlightPostIds = [] 
                   post={post}
                   monthName={monthData.month}
                   year={monthData.year || new Date().getFullYear()}
+                  channel={channel}
+                  contactId={contactId}
                   onUpdate={handleUpdatePost}
                   onDelete={handleDeletePost}
                 />
