@@ -41,6 +41,8 @@ const CalendarPostEditor = ({
   const daysInMonth = getDaysInMonth(monthName, year);
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
+  const formatOptions = POST_FORMATS[channel] || POST_FORMATS['Instagram'] || [];
+
   const handleSave = () => {
     onUpdate(editData);
     setIsEditing(false);
@@ -265,7 +267,7 @@ const CalendarPostEditor = ({
                   <SelectValue placeholder="Formato" />
                 </SelectTrigger>
                 <SelectContent>
-                  {(POST_FORMATS[channel] || POST_FORMATS['Instagram'] || []).map(f => (
+                  {formatOptions.map(f => (
                     <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
                   ))}
                 </SelectContent>
@@ -491,9 +493,7 @@ const CalendarPostEditor = ({
                   </span>
                   {post.post_format && post.post_format !== 'post' && (
                     <Badge variant="outline" className="text-xs py-0">
-                      {(POST_FORMATS[channel] || []).find(f => f.value === post.post_format)?.label || post.post_format}
-                    </Badge>
-                  )}
+                      {formatOptions.find(f => f.value === post.post_format)?.label || post.post_format}
                     </Badge>
                   )}
                   {post.ai_generated && (
