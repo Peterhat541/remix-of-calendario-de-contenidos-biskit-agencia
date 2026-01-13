@@ -79,6 +79,9 @@ export type Database = {
       }
       calendar_posts: {
         Row: {
+          ai_copy_prompt: string | null
+          ai_generated: boolean | null
+          ai_image_prompt: string | null
           calendar_id: string
           copy: string | null
           created_at: string
@@ -88,11 +91,17 @@ export type Database = {
           image_url: string | null
           month_name: string
           month_year: number
+          objective: string | null
+          post_format: string | null
           post_order: number | null
+          theme_context: string | null
           title: string | null
           updated_at: string
         }
         Insert: {
+          ai_copy_prompt?: string | null
+          ai_generated?: boolean | null
+          ai_image_prompt?: string | null
           calendar_id: string
           copy?: string | null
           created_at?: string
@@ -102,11 +111,17 @@ export type Database = {
           image_url?: string | null
           month_name: string
           month_year: number
+          objective?: string | null
+          post_format?: string | null
           post_order?: number | null
+          theme_context?: string | null
           title?: string | null
           updated_at?: string
         }
         Update: {
+          ai_copy_prompt?: string | null
+          ai_generated?: boolean | null
+          ai_image_prompt?: string | null
           calendar_id?: string
           copy?: string | null
           created_at?: string
@@ -116,7 +131,10 @@ export type Database = {
           image_url?: string | null
           month_name?: string
           month_year?: number
+          objective?: string | null
+          post_format?: string | null
           post_order?: number | null
+          theme_context?: string | null
           title?: string | null
           updated_at?: string
         }
