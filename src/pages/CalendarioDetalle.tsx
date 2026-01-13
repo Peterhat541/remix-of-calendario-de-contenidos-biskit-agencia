@@ -86,6 +86,7 @@ import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { getPublicBaseUrl } from '@/utils/publicUrl';
+import { ContactAISection } from '@/components/ContactAISection';
 
 // Share history item type
 interface ShareHistoryItem {
@@ -2407,6 +2408,14 @@ const CalendarioDetalle = () => {
                 </CollapsibleContent>
               </Card>
             </Collapsible>
+
+            {/* AI Content Profile Section */}
+            {calendar.calendar_contact && (
+              <ContactAISection 
+                contactId={calendar.calendar_contact.id}
+                onProfileUpdated={loadCalendar}
+              />
+            )}
           </div>
         </div>
       </main>
