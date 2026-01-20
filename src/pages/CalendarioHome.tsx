@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Calendar, Eye, FileDown, Palette, Sparkles, Rocket } from "lucide-react";
+import { Calendar, Eye, FileDown, Palette, Sparkles, Rocket, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const CalendarioHome = () => {
@@ -12,11 +12,11 @@ const CalendarioHome = () => {
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/logo-likearocket.png" alt="Like a Rocket" className="h-10 w-auto" />
-            <span className="text-lg font-semibold text-foreground">Calendario</span>
+            <span className="text-lg font-semibold text-foreground">Calendario de Contenidos</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/informes")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver a informes
+          <Button variant="outline" size="sm" onClick={() => navigate("/calendarios")}>
+            <List className="h-4 w-4 mr-2" />
+            Ver calendarios
           </Button>
         </div>
       </header>
@@ -31,7 +31,7 @@ const CalendarioHome = () => {
             </div>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
-            Calendario de contenidos
+            Calendario de Contenidos
           </h1>
           <p className="text-xl text-accent font-medium mb-6">
             Planifica, edita y exporta tu calendario editorial
@@ -53,7 +53,7 @@ const CalendarioHome = () => {
               Calendario Like a Rocket
             </Button>
             
-            {/* Biskit Button - Black with yellow text, editorial style */}
+            {/* Biskit Button */}
             <Button
               onClick={() => navigate("/calendario-contenidos/nuevo?agency=biskit")}
               size="lg"
