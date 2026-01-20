@@ -113,9 +113,9 @@ const CalendarioContenidos = () => {
             <img src="/logo-likearocket.png" alt="Like a Rocket" className="h-8 w-auto" />
             <span className="text-lg font-semibold text-foreground">Calendario de Contenidos</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => navigate('/informes')}>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/calendarios')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver
+            Ver calendarios
           </Button>
         </div>
       </header>

@@ -179,14 +179,6 @@ export default function CalendariosCrm() {
 
             <div className="flex flex-col items-end gap-2">
               <Button
-                variant="ghost"
-                onClick={() => navigate("/informes")}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Volver a Informes
-              </Button>
-              <Button
                 onClick={() => navigate("/calendario-contenidos/nuevo")}
                 className="h-10 rounded-lg px-4 shadow-sm hover:shadow-md"
               >
