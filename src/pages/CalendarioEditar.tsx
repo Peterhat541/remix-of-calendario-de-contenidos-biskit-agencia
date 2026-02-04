@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, FileText, Eye, Save, Loader2, MessageSquare, Check, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Calendar, FileText, Eye, Save, Loader2, MessageSquare, Check, ExternalLink, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import CalendarMonthSection from '@/components/CalendarMonthSection';
 import CalendarPdfViewerModal from '@/components/CalendarPdfViewerModal';
+import { SendEmailModal } from '@/components/SendEmailModal';
 import {
   CalendarMonth,
   CalendarMeta,
@@ -34,6 +35,11 @@ const CalendarioEditar = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [clientProposal, setClientProposal] = useState<ProposalData | null>(null);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+  const [contactEmail, setContactEmail] = useState<string>('');
+  const [responsibleEmails, setResponsibleEmails] = useState<string[]>([]);
   
   const [calendarMeta, setCalendarMeta] = useState<CalendarMeta>({
     client_name: '',
@@ -84,6 +90,15 @@ const CalendarioEditar = () => {
         timezone: 'Europe/Madrid',
         language: 'es-ES'
       });
+
+      // Set contact email and responsible emails for SendEmailModal
+      setContactEmail(calendar.calendar_contact?.email || '');
+      const respEmails = Array.isArray(calendar.responsibles)
+        ? calendar.responsibles
+            .map(r => typeof r === 'string' ? r : r?.email)
+            .filter((email): email is string => !!email)
+        : [];
+      setResponsibleEmails(respEmails);
 
       // Load posts
       const { data: posts, error: postsError } = await supabase
@@ -371,6 +386,131 @@ const CalendarioEditar = () => {
     setShowPdfPreview(true);
   };
 
+  const generateShareLinkForEmail = async (): Promise<string | null> => {
+    if (!id) return null;
+    
+    setIsGeneratingLink(true);
+    try {
+      // Fetch current calendar data
+      const calendar = await getCalendarById(id);
+      if (!calendar) return null;
+
+      // Fetch posts
+      const { data: posts } = await supabase
+        .from('calendar_posts')
+        .select('*')
+        .eq('calendar_id', id)
+        .order('post_order', { ascending: true });
+
+      // Group posts by month
+      const monthsMap = new Map<string, any>();
+      (posts || []).forEach((post: any) => {
+        const key = `${post.month_name}-${post.month_year}`;
+        if (!monthsMap.has(key)) {
+          monthsMap.set(key, {
+            month: post.month_name,
+            year: post.month_year,
+            posts: []
+          });
+        }
+        monthsMap.get(key).posts.push({
+          id: post.id,
+          day_of_month: post.day_of_month,
+          image: {
+            source: post.image_source || 'none',
+            clipboard_data_url: post.image_source === 'clipboard' ? post.image_url : '',
+            file_url: post.image_source === 'file' ? post.image_url : ''
+          },
+          title: post.title || '',
+          copy: post.copy || ''
+        });
+      });
+
+      const contentJson = {
+        calendar: {
+          client_name: calendar.calendar_contact?.company_name || '',
+          brand: '',
+          channel: calendar.channel,
+          month_start: calendar.month_start,
+          month_end: calendar.month_end,
+          responsibles: calendar.responsibles?.map(r => r.email) || []
+        },
+        months: Array.from(monthsMap.values())
+      };
+
+      // Check for existing document
+      const { data: existingDocs } = await supabase
+        .from('documents')
+        .select('id, share_links(token)')
+        .eq('calendar_id', id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      let token: string;
+
+      if (existingDocs && existingDocs.length > 0) {
+        const doc = existingDocs[0];
+        const shareLinks = doc.share_links as unknown as Array<{ token: string }>;
+        token = shareLinks?.[0]?.token || crypto.randomUUID() + '-' + Date.now().toString(36);
+
+        // Update existing document
+        await supabase
+          .from('documents')
+          .update({ content_json: contentJson, updated_at: new Date().toISOString() })
+          .eq('id', doc.id);
+
+        // Create share_link if doesn't exist
+        if (!shareLinks?.[0]?.token) {
+          await supabase.from('share_links').insert({
+            document_id: doc.id,
+            token,
+            can_view: true,
+            can_propose: true
+          });
+        }
+      } else {
+        // Create new document and share_link
+        token = crypto.randomUUID() + '-' + Date.now().toString(36);
+        
+        const { data: newDoc } = await supabase
+          .from('documents')
+          .insert({ calendar_id: id, content_json: contentJson })
+          .select()
+          .single();
+
+        if (newDoc) {
+          await supabase.from('share_links').insert({
+            document_id: newDoc.id,
+            token,
+            can_view: true,
+            can_propose: true
+          });
+        }
+      }
+
+      const baseUrl = getPublicBaseUrl();
+      const fullLink = `${baseUrl}/share/${token}`;
+      setShareLink(fullLink);
+      return fullLink;
+    } catch (error) {
+      console.error('Error generating share link:', error);
+      toast.error('Error al generar enlace');
+      return null;
+    } finally {
+      setIsGeneratingLink(false);
+    }
+  };
+
+  const handleOpenEmailModal = async () => {
+    // Generate/update share link first
+    const link = await generateShareLinkForEmail();
+    if (link) {
+      setEmailModalOpen(true);
+    }
+  };
+
+  const canSendEmail = !!contactEmail && responsibleEmails.length > 0;
+
   const getPostsWithFeedback = (): string[] => {
     if (!clientProposal) return [];
     return Object.keys(clientProposal.changes).filter(postId => {
@@ -463,26 +603,23 @@ const CalendarioEditar = () => {
                     {isSaving ? 'Guardando...' : 'Guardar cambios'}
                   </Button>
 
-                  {/* PDF buttons */}
-                  <div className="flex flex-col gap-2">
-                    <Button 
-                      onClick={handlePreviewPDF} 
-                      variant="secondary" 
-                      className="w-full"
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Vista previa del PDF
-                    </Button>
-                    <Button 
-                      onClick={handleGeneratePDF} 
-                      variant="outline"
-                      className="w-full"
-                      disabled={isGeneratingPdf}
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      {isGeneratingPdf ? 'Generando...' : 'Generar PDF'}
-                    </Button>
-                  </div>
+                  {/* Send to client button */}
+                  <Button 
+                    onClick={handleOpenEmailModal}
+                    variant="outline"
+                    className="w-full"
+                    disabled={!canSendEmail || isGeneratingLink}
+                    title={!canSendEmail ? (
+                      !contactEmail ? 'El contacto no tiene email' : 'No hay responsables asignados'
+                    ) : 'Enviar calendario al cliente'}
+                  >
+                    {isGeneratingLink ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Mail className="h-4 w-4 mr-2" />
+                    )}
+                    {isGeneratingLink ? 'Preparando...' : 'Enviar al cliente'}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -657,6 +794,22 @@ const CalendarioEditar = () => {
         calendarMeta={calendarMeta}
         months={months}
       />
+
+      {/* Send Email Modal */}
+      {shareLink && (
+        <SendEmailModal
+          open={emailModalOpen}
+          onOpenChange={setEmailModalOpen}
+          calendarId={id || ''}
+          companyName={calendarMeta.client_name}
+          channel={calendarMeta.channel}
+          period={`${calendarMeta.month_start} - ${calendarMeta.month_end}`}
+          shareLink={shareLink}
+          contactEmail={contactEmail}
+          responsibleEmails={responsibleEmails}
+          sendCalendarOnly={true}
+        />
+      )}
     </div>
   );
 };
