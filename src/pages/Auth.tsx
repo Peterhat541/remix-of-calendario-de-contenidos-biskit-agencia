@@ -13,8 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 const emailSchema = z.string().email("Email inválido");
 const passwordSchema = z.string().min(6, "Mínimo 6 caracteres");
 
-// ⚠️ TEMPORAL: Cambiar a false después de crear la cuenta de Sandra
-const ALLOW_REGISTRATION = true;
+// Registro deshabilitado - solo acceso por login
+const ALLOW_REGISTRATION = false;
 
 export default function Auth() {
   const [email, setEmail] = useState("");
