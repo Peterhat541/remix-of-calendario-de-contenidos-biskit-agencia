@@ -6,56 +6,55 @@
 
 @layer base {
   :root {
-    /* Biskit Agencia Brand Colors - Dark theme with yellow accent */
-    --background: 0 0% 5%;
-    --foreground: 0 0% 95%;
+    /* Tema claro con beige - Biskit Agencia */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
 
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 95%;
+    --card: 40 25% 98%;
+    --card-foreground: 0 0% 9%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
 
-    /* Amarillo Biskit #FFD700 → HSL: 54 100% 50% */
+    /* Amarillo Biskit - SOLO CTAs */
     --primary: 54 100% 50%;
     --primary-foreground: 0 0% 5%;
 
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 40 25% 96%;
+    --secondary-foreground: 0 0% 9%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 40 20% 96%;
+    --muted-foreground: 40 15% 40%;
 
-    /* Amarillo Biskit para acentos */
     --accent: 54 100% 50%;
     --accent-foreground: 0 0% 5%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
+    --border: 40 20% 90%;
+    --input: 40 20% 90%;
     --ring: 54 100% 50%;
 
     --radius: 0.5rem;
 
-    /* Custom tokens - Biskit */
-    --surface-elevated: 0 0% 10%;
-    --text-label: 0 0% 65%;
-    --text-heading: 0 0% 98%;
-    --border-subtle: 0 0% 20%;
+    /* Custom tokens - Biskit Light Theme */
+    --surface-elevated: 40 25% 99%;
+    --text-label: 40 15% 35%;
+    --text-heading: 0 0% 9%;
+    --border-subtle: 40 20% 92%;
     --highlight: 54 100% 50%;
-    --image-shadow: 0 0% 0%;
+    --image-shadow: 40 20% 85%;
     
     /* Biskit brand tokens */
-    --biskit-bg: 0 0% 0%;
-    --biskit-fg: 0 0% 100%;
+    --biskit-bg: 0 0% 100%;
+    --biskit-fg: 0 0% 9%;
     --biskit-yellow: 54 100% 50%;
     --biskit-yellow-hover: 54 100% 45%;
   }
 
   .dark {
-    /* Dark mode uses same colors as root for Biskit */
+    /* Dark mode preserved for future use */
     --background: 0 0% 5%;
     --foreground: 0 0% 95%;
     --card: 0 0% 8%;
@@ -109,9 +108,10 @@
   }
 
   .form-input {
-    @apply w-full px-4 py-3 text-base bg-surface-elevated border border-input rounded-md 
-           placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-highlight/20 
-           focus:border-highlight transition-colors;
+    @apply w-full px-4 py-3 text-base bg-white border border-input rounded-lg 
+           text-foreground placeholder:text-muted-foreground 
+           focus:outline-none focus:ring-2 focus:ring-primary/20 
+           focus:border-primary/50 transition-all;
   }
 
   .section-card {
