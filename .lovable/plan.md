@@ -1,25 +1,26 @@
 
+# Configurar FROM_EMAIL para Biskit Agencia
 
-# Configuración de RESEND_API_KEY
+## Problema Detectado
+El secreto `FROM_EMAIL` tiene el valor `PLACEHOLDER_VALUE_TO_BE_REPLACED`, lo cual causa el error de validación de Resend:
+```
+Invalid `from` field. The email address needs to follow the `email@example.com` or `Name <email@example.com>` format.
+```
 
-## Situación Actual
-- El secreto `RESEND_API_KEY` existe en el proyecto pero no tiene un valor válido configurado
-- Esto causa el error "Missing API key" cuando la función intenta enviar correos
+## Solución
+Actualizar el secreto `FROM_EMAIL` con un valor válido usando tu dominio verificado.
 
-## Pasos a Ejecutar
+## Valor Propuesto
+```
+Biskit Agencia <noreply@biskitagencia.com>
+```
 
-### 1. Solicitar el API Key
-Te mostraré un campo seguro donde podrás pegar tu API key de Resend (formato: `re_xxxxxxxx...`)
+## Pasos
+1. Actualizar el secreto `FROM_EMAIL` con el valor correcto
+2. Probar el envío de correo desde el calendario
 
-### 2. Verificar el Envío
-Una vez configurado, probaremos enviando un correo desde el calendario para confirmar que funciona
+## Resultado Esperado
+Los correos se enviarán correctamente desde `noreply@biskitagencia.com` y llegarán a los clientes.
 
-## Información Técnica
-- **Función afectada**: `supabase/functions/send-calendar-email/index.ts`
-- **Variable de entorno**: `RESEND_API_KEY`
-- **Remitente configurado**: Usa la variable `FROM_EMAIL` o el valor por defecto `Like a Rocket <onboarding@resend.dev>`
-
-## Nota sobre el Dominio
-- Si usas `onboarding@resend.dev` como remitente (sandbox de Resend), solo podrás enviar correos a direcciones verificadas en tu cuenta de Resend
-- Para enviar a cualquier dirección, necesitarás verificar tu propio dominio en Resend y actualizar la variable `FROM_EMAIL`
-
+## Nota
+Si prefieres otra dirección (ej: `info@biskitagencia.com`, `calendarios@biskitagencia.com`), indícamelo antes de aprobar.
