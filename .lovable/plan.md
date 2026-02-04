@@ -1,11 +1,42 @@
 
 
-# Plan: Seguridad de Acceso, Gestión de Usuarios y Activación de Envío de Emails
+# Plan: Seguridad de Acceso y Gestión de Usuarios
 
-## Estado Actual de la Base de Datos
+## Estado: ✅ IMPLEMENTADO
 
-| Tabla | Estado |
-|-------|--------|
+### Cambios Completados
+
+1. **Registro público deshabilitado** - `src/pages/Auth.tsx`
+   - Solo formulario de login (sin pestaña de registro)
+   - Logging de actividad en cada login
+   - Mensaje de contactar al administrador
+
+2. **Panel de administración** - `src/pages/AdminUsuarios.tsx`
+   - Gestión de usuarios (crear, cambiar roles)
+   - Registro de actividad del sistema
+   - Acceso restringido a rol "admin"
+
+3. **Tabla de logs** - `user_activity_logs`
+   - Registra acciones: login, logout, email_sent, calendar_updated, etc.
+   - RLS: solo admins pueden ver logs
+   - Usuarios autenticados pueden insertar
+
+4. **Hook de logging** - `src/hooks/useActivityLog.ts`
+   - Función reutilizable para registrar actividad
+
+5. **Ruta /admin/usuarios** añadida a `src/App.tsx`
+
+6. **Roles asignados**:
+   - Lucía (lucia@biskitagencia.com) → manager
+   - Sandra (sandra@biskitagencia.com) → pendiente de crear cuenta
+
+### Próximos Pasos
+
+1. **Crear cuenta para sandra@biskitagencia.com**:
+   - Ir a /auth y registrarse (temporalmente habilitado internamente o usar panel admin)
+   - O usar el botón "Nuevo Usuario" en /admin/usuarios
+
+2. **Asignar rol admin a Sandra** después de crear su cuenta
 | `auth.users` | lucia@biskitagencia.com, sandra@minyn.es |
 | `team_members_calendar` | lucia@biskitagencia.com, sandra@biskitagencia.com |
 | `profiles` | Vacía |
