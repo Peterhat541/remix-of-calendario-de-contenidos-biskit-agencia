@@ -70,7 +70,7 @@ const SharePublicationCard = ({
           )}
         </div>
         {hasProposals && (
-          <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full font-medium">
+          <span className="text-xs px-2 py-1 bg-primary/10 text-foreground rounded-full font-medium">
             Con propuestas
           </span>
         )}
@@ -146,7 +146,7 @@ const SharePublicationCard = ({
           className="w-full px-6 py-4 flex items-center justify-between hover:bg-muted/20 transition-colors"
         >
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-primary">
+            <span className="text-sm font-semibold text-foreground">
               Propuesta del cliente
             </span>
             {hasProposals && (

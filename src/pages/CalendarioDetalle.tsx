@@ -1063,7 +1063,7 @@ const CalendarioDetalle = () => {
                 href={details.pdf_url as string} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-primary hover:underline flex items-center gap-1"
+                className="text-foreground hover:underline flex items-center gap-1"
               >
                 <Download className="h-3 w-3" />
                 Descargar PDF
@@ -1159,7 +1159,7 @@ const CalendarioDetalle = () => {
                   href={details.share_link as string} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-primary hover:underline text-xs truncate max-w-[200px]"
+                  className="text-foreground hover:underline text-xs truncate max-w-[200px]"
                 >
                   {details.share_link as string}
                 </a>
@@ -1744,7 +1744,7 @@ const CalendarioDetalle = () => {
                         key={month.key}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer border transition-colors ${
                           selectedVisibleMonths.includes(month.key) || selectedVisibleMonths.length === 0
-                            ? 'bg-primary/10 border-primary/30 text-primary'
+                            ? 'bg-primary/10 border-primary/30 text-foreground font-medium'
                             : 'bg-muted border-border text-muted-foreground'
                         }`}
                       >
@@ -1912,7 +1912,7 @@ const CalendarioDetalle = () => {
                                   {periodLabel}
                                 </span>
                                 {index === 0 && (
-                                  <Badge variant="outline" className="text-xs bg-primary/10 border-primary/30 text-primary">
+                                  <Badge variant="outline" className="text-xs bg-primary/10 border-primary/30 text-foreground">
                                     Actual
                                   </Badge>
                                 )}
@@ -2226,7 +2226,7 @@ const CalendarioDetalle = () => {
                                   {edit.performed_by && (
                                     <>
                                       <span>•</span>
-                                      <span className="text-primary/80 truncate max-w-[120px]">
+                                      <span className="text-muted-foreground truncate max-w-[120px]">
                                         {edit.performed_by}
                                       </span>
                                     </>

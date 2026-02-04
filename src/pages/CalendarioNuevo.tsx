@@ -569,7 +569,7 @@ const CalendarioNuevo = () => {
             <span className="text-lg font-semibold text-foreground">Nuevo Calendario</span>
             <Badge 
               variant="outline"
-              className="bg-primary/10 text-primary border-primary/30"
+              className="bg-primary/10 text-foreground border-primary/30"
             >
               Biskit Agencia
             </Badge>

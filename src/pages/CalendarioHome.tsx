@@ -33,7 +33,7 @@ const CalendarioHome = () => {
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
             Calendario de Contenidos
           </h1>
-          <p className="text-xl text-primary font-medium mb-6">
+          <p className="text-xl text-foreground font-medium mb-6">
             Planifica, edita y exporta tu calendario editorial
           </p>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
