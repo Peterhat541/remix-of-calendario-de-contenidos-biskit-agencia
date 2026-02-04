@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, FileText, Eye, Users, Save, Building2, Send, Link2, Copy, Check, Loader2, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Calendar, FileText, Eye, Users, Save, Send, Link2, Copy, Check, Loader2, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,7 +19,7 @@ import {
   DEFAULT_CHANNEL,
   generateMonthsArray
 } from '@/types/contentCalendar';
-import { Agency, AGENCIES, AGENCY_LABELS } from '@/types/calendarCrm';
+import { Agency } from '@/types/calendarCrm';
 import { generateCalendarPDF } from '@/utils/calendarPdfGenerator';
 import { useCalendarCrm } from '@/hooks/useCalendarCrm';
 import { useAuth } from '@/hooks/useAuth';
@@ -44,9 +44,8 @@ const CalendarioNuevo = () => {
   const [selectedResponsibles, setSelectedResponsibles] = useState<string[]>([]);
   const [existingContactId, setExistingContactId] = useState<string | null>(null);
   
-  // Agency state - read from query param or default to likearocket
-  const initialAgency = (searchParams.get('agency') as Agency) || 'likearocket';
-  const [selectedAgencies, setSelectedAgencies] = useState<Agency[]>([initialAgency]);
+  // Agency state - always biskit
+  const [selectedAgencies, setSelectedAgencies] = useState<Agency[]>(['biskit']);
   
   const [calendarMeta, setCalendarMeta] = useState<CalendarMeta>({
     client_name: '',
@@ -138,14 +137,7 @@ const CalendarioNuevo = () => {
   }, [searchParams]);
 
   // Update agencies when query param changes (for agency param only, not full contactId flow)
-  useEffect(() => {
-    const agencyParam = searchParams.get('agency') as Agency;
-    const contactId = searchParams.get('contactId');
-    // Only apply single agency param if not coming from contactId flow
-    if (agencyParam && ['likearocket', 'biskit'].includes(agencyParam) && !contactId) {
-      setSelectedAgencies([agencyParam]);
-    }
-  }, [searchParams]);
+  // Agency is always biskit - no need to handle query params
 
   // Generate months when date range changes
   useEffect(() => {
@@ -187,17 +179,6 @@ const CalendarioNuevo = () => {
         ? prev.filter(r => r !== id)
         : [...prev, id]
     );
-  };
-
-  const toggleAgency = (agency: Agency) => {
-    setSelectedAgencies(prev => {
-      if (prev.includes(agency)) {
-        // Don't allow removing all agencies
-        if (prev.length === 1) return prev;
-        return prev.filter(a => a !== agency);
-      }
-      return [...prev, agency];
-    });
   };
 
   const handleSaveCalendar = async () => {
@@ -568,13 +549,8 @@ const CalendarioNuevo = () => {
     setShowPdfPreview(true);
   };
 
-  // Get header style based on selected agencies
-  const getHeaderLogo = () => {
-    if (selectedAgencies.length === 2 || selectedAgencies.includes('likearocket')) {
-      return '/logo-likearocket.png?v=20251229';
-    }
-    return '/logo-biskit.png?v=20251229';
-  };
+  // Always use Biskit logo
+  const getHeaderLogo = () => '/logo-biskit.png';
 
   if (authLoading) {
     return (
@@ -589,20 +565,14 @@ const CalendarioNuevo = () => {
       <header className="border-b border-border bg-card sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={getHeaderLogo()} alt="Logo" className="h-8 w-auto" loading="eager" onError={(e) => console.error('Logo failed to load:', e.currentTarget.src)} />
+            <img src="/logo-biskit.png" alt="Biskit Agencia" className="h-8 w-auto" />
             <span className="text-lg font-semibold text-foreground">Nuevo Calendario</span>
-            {/* Show agency badges */}
-            <div className="flex gap-1">
-              {selectedAgencies.map(agency => (
-                <Badge 
-                  key={agency} 
-                  variant="outline"
-                  className={agency === 'biskit' ? 'bg-biskit-bg text-biskit-yellow border-biskit-yellow/30' : 'bg-accent/10 text-accent border-accent/30'}
-                >
-                  {AGENCY_LABELS[agency]}
-                </Badge>
-              ))}
-            </div>
+            <Badge 
+              variant="outline"
+              className="bg-primary/10 text-primary border-primary/30"
+            >
+              Biskit Agencia
+            </Badge>
           </div>
           <Button variant="ghost" size="sm" onClick={() => navigate('/calendarios')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -684,36 +654,6 @@ const CalendarioNuevo = () => {
                   </div>
                 </div>
 
-                {/* Agencies */}
-                <div className="space-y-2 pt-4 border-t border-border">
-                  <Label className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4" />
-                    Agencias *
-                  </Label>
-                  <div className="flex flex-wrap gap-2">
-                    {AGENCIES.map(agency => (
-                      <Badge
-                        key={agency.id}
-                        variant={selectedAgencies.includes(agency.id) ? 'default' : 'outline'}
-                        className={`cursor-pointer transition-all ${
-                          selectedAgencies.includes(agency.id)
-                            ? agency.id === 'biskit'
-                              ? 'bg-biskit-bg text-biskit-yellow border-biskit-yellow hover:bg-biskit-bg/80'
-                              : 'bg-accent text-accent-foreground hover:bg-accent/90'
-                            : agency.id === 'biskit'
-                              ? 'hover:bg-biskit-bg/10 hover:text-biskit-yellow hover:border-biskit-yellow/50'
-                              : 'hover:bg-accent/10 hover:text-accent hover:border-accent/50'
-                        }`}
-                        onClick={() => toggleAgency(agency.id)}
-                      >
-                        {agency.name}
-                      </Badge>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Puedes seleccionar una o ambas agencias
-                  </p>
-                </div>
 
                 {/* Responsibles */}
                 <div className="space-y-2 pt-4 border-t border-border">

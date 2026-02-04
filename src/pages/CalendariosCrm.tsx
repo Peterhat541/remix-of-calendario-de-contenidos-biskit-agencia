@@ -1,12 +1,11 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Calendar, FileText, Search, Trash2, Building2, ArrowLeft, LayoutGrid, List, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Calendar, FileText, Search, Trash2, ArrowLeft, LayoutGrid, List, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -36,7 +35,7 @@ import {
 
 import { useAuth } from "@/hooks/useAuth";
 import { useCalendarCrm } from "@/hooks/useCalendarCrm";
-import type { CalendarStatus, ContentCalendar, Agency, CALENDAR_STATUSES } from "@/types/calendarCrm";
+import type { CalendarStatus, ContentCalendar } from "@/types/calendarCrm";
 
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
@@ -75,7 +74,6 @@ const formatPeriod = (start: string, end: string) => {
   return startMonth === endMonth ? cap(startMonth) : `${cap(startMonth)} – ${cap(endMonth)}`;
 };
 
-type AgencyFilter = 'all' | Agency;
 type ViewMode = 'grid' | 'list';
 
 export default function CalendariosCrm() {
@@ -85,9 +83,6 @@ export default function CalendariosCrm() {
   const { calendars, loading, deleteCalendar } = useCalendarCrm();
 
   const [query, setQuery] = useState("");
-  const [agencyFilter, setAgencyFilter] = useState<AgencyFilter>(
-    (searchParams.get('agency') as AgencyFilter) || 'all'
-  );
   const [viewMode, setViewMode] = useState<ViewMode>(
     (searchParams.get('view') as ViewMode) || 'grid'
   );
@@ -96,19 +91,8 @@ export default function CalendariosCrm() {
   );
 
   useEffect(() => {
-    document.title = "Calendarios de Mi Workspace";
+    document.title = "Calendarios - Biskit Agencia";
   }, []);
-
-  const handleAgencyChange = (value: string) => {
-    const agency = value as AgencyFilter;
-    setAgencyFilter(agency);
-    if (agency === 'all') {
-      searchParams.delete('agency');
-    } else {
-      searchParams.set('agency', agency);
-    }
-    setSearchParams(searchParams);
-  };
 
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
@@ -130,11 +114,6 @@ export default function CalendariosCrm() {
   const filtered = useMemo(() => {
     let result = calendars;
 
-    // Filter by agency
-    if (agencyFilter !== 'all') {
-      result = result.filter(c => c.agencies?.includes(agencyFilter));
-    }
-
     // Filter by status
     if (statusFilter !== 'all') {
       result = result.filter(c => c.status === statusFilter);
@@ -152,7 +131,7 @@ export default function CalendariosCrm() {
     }
 
     return result;
-  }, [calendars, query, agencyFilter, statusFilter]);
+  }, [calendars, query, statusFilter]);
 
   if (loading || authLoading) {
     return (
@@ -170,10 +149,10 @@ export default function CalendariosCrm() {
           <header className="flex items-start justify-between gap-6 mb-10">
             <div className="min-w-0">
               <h1 className="text-3xl font-bold text-foreground tracking-tight">
-                Calendarios de Mi Workspace
+                Calendarios
               </h1>
               <p className="mt-2 text-muted-foreground">
-                Gestiona calendarios de contenidos con tu equipo
+                Gestiona calendarios de contenidos
               </p>
             </div>
 
@@ -189,28 +168,6 @@ export default function CalendariosCrm() {
 
           {/* Filters row */}
           <section className="mb-6 flex flex-wrap items-center gap-4">
-            {/* Agency Tabs */}
-            <Tabs value={agencyFilter} onValueChange={handleAgencyChange}>
-              <TabsList className="grid grid-cols-3">
-                <TabsTrigger value="all" className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4" />
-                  Todos
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="likearocket" 
-                  className="flex items-center gap-2 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
-                >
-                  Like a Rocket
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="biskit"
-                  className="flex items-center gap-2 data-[state=active]:bg-biskit-bg data-[state=active]:text-biskit-yellow"
-                >
-                  Biskit
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-
             {/* View mode toggle */}
             <div className="flex items-center gap-1 border rounded-lg p-1 bg-muted/50 ml-auto">
               <Button
@@ -269,15 +226,13 @@ export default function CalendariosCrm() {
                   Sin calendarios
                 </h2>
                 <p className="text-muted-foreground mb-6">
-                  {agencyFilter !== 'all' 
-                    ? `No hay calendarios de ${agencyFilter === 'likearocket' ? 'Like a Rocket' : 'Biskit'}`
-                    : statusFilter !== 'all'
+                  {statusFilter !== 'all'
                     ? `No hay calendarios con estado "${statusFilter}"`
                     : 'Crea tu primer calendario para empezar'
                   }
                 </p>
                 <Button
-                  onClick={() => navigate(`/calendario-contenidos/nuevo${agencyFilter !== 'all' ? `?agency=${agencyFilter}` : ''}`)}
+                  onClick={() => navigate('/calendario-contenidos/nuevo')}
                   className="h-10 rounded-lg px-4 shadow-sm hover:shadow-md"
                 >
                   Nuevo calendario

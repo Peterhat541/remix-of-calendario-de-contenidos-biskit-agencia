@@ -57,10 +57,6 @@ export default {
         "border-subtle": "hsl(var(--border-subtle))",
         highlight: "hsl(var(--highlight))",
         "image-shadow": "hsl(var(--image-shadow))",
-        // Brand colors - Like a Rocket
-        "brand-pink": "hsl(var(--brand-pink))",
-        "brand-teal": "hsl(var(--brand-teal))",
-        "brand-light": "hsl(var(--brand-light))",
         // Brand colors - Biskit
         "biskit-bg": "hsl(var(--biskit-bg))",
         "biskit-fg": "hsl(var(--biskit-fg))",

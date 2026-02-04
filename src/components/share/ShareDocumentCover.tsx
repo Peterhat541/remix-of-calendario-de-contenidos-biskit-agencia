@@ -32,7 +32,7 @@ const ShareDocumentCover = ({
 
   return (
     <section className="bg-white rounded-lg shadow-sm border border-border/50 overflow-hidden mb-12">
-      {/* Header accent */}
+      {/* Header accent - Biskit yellow */}
       <div className="h-2 bg-gradient-to-r from-primary via-primary/80 to-primary/60" />
       
       <div className="px-8 py-12 md:px-16 md:py-16">

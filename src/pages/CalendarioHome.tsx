@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Calendar, Eye, FileDown, Palette, Sparkles, Rocket, List } from "lucide-react";
+import { Calendar, Eye, FileDown, Palette, Sparkles, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const CalendarioHome = () => {
@@ -11,7 +11,7 @@ const CalendarioHome = () => {
       <header className="sticky top-0 z-20 bg-card/95 backdrop-blur border-b border-border py-4 px-6">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/logo-likearocket.png" alt="Like a Rocket" className="h-10 w-auto" />
+            <img src="/logo-biskit.png" alt="Biskit Agencia" className="h-10 w-auto" />
             <span className="text-lg font-semibold text-foreground">Calendario de Contenidos</span>
           </div>
           <Button variant="outline" size="sm" onClick={() => navigate("/calendarios")}>
@@ -23,17 +23,17 @@ const CalendarioHome = () => {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-primary/5 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 pointer-events-none" />
         <div className="max-w-4xl mx-auto px-6 py-20 text-center relative">
           <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 bg-accent/20 rounded-2xl flex items-center justify-center">
-              <Calendar className="w-10 h-10 text-accent" />
+            <div className="w-20 h-20 bg-primary/20 rounded-2xl flex items-center justify-center">
+              <Calendar className="w-10 h-10 text-primary" />
             </div>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
             Calendario de Contenidos
           </h1>
-          <p className="text-xl text-accent font-medium mb-6">
+          <p className="text-xl text-primary font-medium mb-6">
             Planifica, edita y exporta tu calendario editorial
           </p>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
@@ -41,28 +41,15 @@ const CalendarioHome = () => {
             de forma clara y genera PDFs profesionales listos para compartir.
           </p>
           
-          {/* Two CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-lg mx-auto">
-            {/* Like a Rocket Button */}
-            <Button
-              onClick={() => navigate("/calendario-contenidos/nuevo?agency=likearocket")}
-              size="lg"
-              className="w-full sm:w-auto inline-flex items-center gap-2 px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl bg-accent hover:bg-accent/90 text-accent-foreground"
-            >
-              <Rocket className="w-5 h-5" />
-              Calendario Like a Rocket
-            </Button>
-            
-            {/* Biskit Button */}
-            <Button
-              onClick={() => navigate("/calendario-contenidos/nuevo?agency=biskit")}
-              size="lg"
-              className="w-full sm:w-auto inline-flex items-center gap-2 px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl bg-biskit-bg hover:bg-biskit-bg/90 text-biskit-yellow border-2 border-biskit-yellow/20 hover:border-biskit-yellow/40"
-            >
-              <Sparkles className="w-5 h-5" />
-              Calendario Biskit
-            </Button>
-          </div>
+          {/* Single CTA Button */}
+          <Button
+            onClick={() => navigate("/calendario-contenidos/nuevo")}
+            size="lg"
+            className="inline-flex items-center gap-2 px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl"
+          >
+            <Sparkles className="w-5 h-5" />
+            Crear Calendario
+          </Button>
         </div>
       </section>
 
@@ -94,7 +81,7 @@ const CalendarioHome = () => {
                 key={index}
                 className="bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow text-center"
               >
-                <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center text-accent mb-4 mx-auto">
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-4 mx-auto">
                   {feature.icon}
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
@@ -108,7 +95,7 @@ const CalendarioHome = () => {
       {/* CTA Section */}
       <section className="py-16">
         <div className="max-w-3xl mx-auto px-6">
-          <div className="bg-gradient-to-br from-accent/10 to-primary/5 rounded-2xl border border-border p-10 text-center">
+          <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl border border-border p-10 text-center">
             <h3 className="text-2xl font-bold text-foreground mb-4">
               Empieza a planificar
             </h3>
@@ -119,14 +106,13 @@ const CalendarioHome = () => {
               <Button
                 onClick={() => navigate("/calendarios")}
                 size="lg"
-                className="bg-accent hover:bg-accent/90"
+                variant="outline"
               >
                 Ver calendarios existentes
               </Button>
               <Button
                 onClick={() => navigate("/calendario-contenidos/nuevo")}
                 size="lg"
-                variant="outline"
               >
                 Crear nuevo calendario
               </Button>
@@ -139,8 +125,8 @@ const CalendarioHome = () => {
       <footer className="py-8 border-t border-border">
         <div className="max-w-4xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <img src="/logo-likearocket.png" alt="Like a Rocket" className="h-6 w-auto" />
-            <span className="text-sm text-muted-foreground">Like a Rocket © {new Date().getFullYear()}</span>
+            <img src="/logo-biskit.png" alt="Biskit Agencia" className="h-6 w-auto" />
+            <span className="text-sm text-muted-foreground">Biskit Agencia © {new Date().getFullYear()}</span>
           </div>
           <p className="text-sm text-muted-foreground">
             Herramienta de planificación editorial
