@@ -15,6 +15,7 @@ import CalendarioEditar from "./pages/CalendarioEditar";
 import ShareCalendar from "./pages/ShareCalendar";
 import Clients from "./pages/Clients";
 import Auth from "./pages/Auth";
+import AdminUsuarios from "./pages/AdminUsuarios";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,9 @@ const App = () => (
                 
                 {/* Gestión de clientes */}
                 <Route path="/clients" element={<Clients />} />
+                
+                {/* Panel de administración */}
+                <Route path="/admin/usuarios" element={<AdminUsuarios />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
