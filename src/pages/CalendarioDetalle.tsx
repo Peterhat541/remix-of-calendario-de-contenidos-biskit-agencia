@@ -146,7 +146,10 @@ const CalendarioDetalle = () => {
   const [selectedVisibleMonths, setSelectedVisibleMonths] = useState<string[]>([]);
   const [existingVisibleMonths, setExistingVisibleMonths] = useState<string[] | null>(null);
   const [shareHistory, setShareHistory] = useState<ShareHistoryItem[]>([]);
-
+  const [shareSlug, setShareSlug] = useState<string>('');
+  const [isUpdatingSlug, setIsUpdatingSlug] = useState(false);
+  const [slugError, setSlugError] = useState<string | null>(null);
+  const [currentShareLinkId, setCurrentShareLinkId] = useState<string | null>(null);
   // Calculate email data - MUST be before any early returns
   const contactEmail = useMemo(() => {
     return calendar?.calendar_contact?.email || '';
@@ -267,7 +270,7 @@ const CalendarioDetalle = () => {
     // Load ALL documents with share links and proposals for this calendar
     const { data: allDocs } = await supabase
       .from('documents')
-      .select('id, created_at, updated_at, visible_months, share_links(token, created_at)')
+      .select('id, created_at, updated_at, visible_months, share_links(id, token, slug, created_at)')
       .eq('calendar_id', id)
       .order('created_at', { ascending: false });
 
@@ -277,7 +280,7 @@ const CalendarioDetalle = () => {
       
       for (const doc of allDocs) {
         const docTyped = doc as { id: string; created_at: string; updated_at: string; visible_months: string[] | null; share_links: unknown };
-        const shareLinks = docTyped.share_links as unknown as Array<{ token: string; created_at?: string }>;
+        const shareLinks = docTyped.share_links as unknown as Array<{ id: string; token: string; slug?: string; created_at?: string }>;
         const token = shareLinks?.[0]?.token;
         
         if (token) {
@@ -316,15 +319,18 @@ const CalendarioDetalle = () => {
       
       // Set the most recent one as the active share link
       const mostRecent = allDocs[0] as { id: string; created_at: string; updated_at: string; visible_months: string[] | null; share_links: unknown };
-      const mostRecentLinks = mostRecent.share_links as unknown as Array<{ token: string; created_at?: string }>;
-      const token = mostRecentLinks?.[0]?.token;
+      const mostRecentLinks = mostRecent.share_links as unknown as Array<{ id: string; token: string; slug?: string; created_at?: string }>;
+      const linkData = mostRecentLinks?.[0];
+      const token = linkData?.token;
 
       if (token) {
         const baseUrl = getPublicBaseUrl();
-        const shareUrl = `${baseUrl}/share/${token}`;
+        const shareUrl = linkData?.slug ? `${baseUrl}/c/${linkData.slug}` : `${baseUrl}/share/${token}`;
         setShareLink(shareUrl);
         setLastDocumentUpdate(mostRecent.updated_at);
         setExistingVisibleMonths(mostRecent.visible_months);
+        setCurrentShareLinkId(linkData.id);
+        setShareSlug(linkData.slug || '');
         if (mostRecent.visible_months) {
           setSelectedVisibleMonths(mostRecent.visible_months);
         }
@@ -768,6 +774,83 @@ const CalendarioDetalle = () => {
     }
   };
 
+  // Generate a slug from the company name
+  const generateSlugFromName = (name: string): string => {
+    return name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Collapse multiple hyphens
+      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+  };
+
+  const handleAutoGenerateSlug = () => {
+    if (calendar?.calendar_contact?.company_name) {
+      const newSlug = generateSlugFromName(calendar.calendar_contact.company_name);
+      setShareSlug(newSlug);
+      setSlugError(null);
+    }
+  };
+
+  const handleSaveSlug = async () => {
+    if (!currentShareLinkId) return;
+    
+    const trimmedSlug = shareSlug.trim();
+    
+    // Validate slug format
+    if (trimmedSlug && !/^[a-z0-9-]+$/.test(trimmedSlug)) {
+      setSlugError('El slug solo puede contener letras minúsculas, números y guiones');
+      return;
+    }
+    
+    setIsUpdatingSlug(true);
+    setSlugError(null);
+    
+    try {
+      const slugToSave = trimmedSlug || null;
+      
+      // Check uniqueness if slug is not empty
+      if (slugToSave) {
+        const { data: existing } = await supabase
+          .from('share_links')
+          .select('id')
+          .eq('slug', slugToSave)
+          .neq('id', currentShareLinkId)
+          .single();
+        
+        if (existing) {
+          setSlugError('Este slug ya está en uso. Prueba con otro nombre.');
+          setIsUpdatingSlug(false);
+          return;
+        }
+      }
+      
+      const { error } = await supabase
+        .from('share_links')
+        .update({ slug: slugToSave })
+        .eq('id', currentShareLinkId);
+      
+      if (error) throw error;
+      
+      // Update the share link display
+      const baseUrl = getPublicBaseUrl();
+      if (slugToSave) {
+        setShareLink(`${baseUrl}/c/${slugToSave}`);
+      } else {
+        // Reload to get the token URL
+        await loadExistingShareLink();
+      }
+      
+      toast.success(slugToSave ? 'URL amigable guardada' : 'URL amigable eliminada');
+    } catch (err) {
+      console.error('Error saving slug:', err);
+      toast.error('Error al guardar la URL amigable');
+    } finally {
+      setIsUpdatingSlug(false);
+    }
+  };
 
   if (loading || authLoading) {
     return (
@@ -1850,6 +1933,54 @@ const CalendarioDetalle = () => {
                         📅 Meses compartidos actualmente: {existingVisibleMonths.length} de {availableMonths.length}
                       </p>
                     )}
+                    {/* Slug / Friendly URL section */}
+                    <div className="border-t border-border pt-3 mt-3">
+                      <Label className="text-xs text-muted-foreground mb-2 block">
+                        URL amigable (opcional)
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">/c/</span>
+                          <Input
+                            value={shareSlug}
+                            onChange={(e) => {
+                              setShareSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''));
+                              setSlugError(null);
+                            }}
+                            placeholder="nombre-cliente"
+                            className="text-sm font-mono pl-9"
+                          />
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleAutoGenerateSlug}
+                          title="Auto-generar desde nombre"
+                        >
+                          <RefreshCw className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={handleSaveSlug}
+                          disabled={isUpdatingSlug}
+                        >
+                          {isUpdatingSlug ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            'Guardar'
+                          )}
+                        </Button>
+                      </div>
+                      {slugError && (
+                        <p className="text-xs text-destructive mt-1">{slugError}</p>
+                      )}
+                      {shareSlug && !slugError && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          URL corta: <span className="font-mono">{getPublicBaseUrl()}/c/{shareSlug}</span>
+                        </p>
+                      )}
+                    </div>
+
                     <p className="text-xs text-muted-foreground mt-2">
                       Cualquier persona con este enlace puede ver el calendario y enviar propuestas
                     </p>

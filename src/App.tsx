@@ -31,6 +31,7 @@ const App = () => (
             <Routes>
               {/* Public routes */}
               <Route path="/share/:token" element={<ShareCalendar />} />
+              <Route path="/c/:slug" element={<ShareCalendar />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/login" element={<Auth />} />
 
