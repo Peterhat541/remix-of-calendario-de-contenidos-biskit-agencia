@@ -1,16 +1,14 @@
 // Types for Calendar CRM module
 
 // Agency types
-export type Agency = 'likearocket' | 'biskit';
+export type Agency = 'biskit';
 
 export const AGENCIES: { id: Agency; name: string; logo?: string }[] = [
-  { id: 'likearocket', name: 'Like a Rocket', logo: '/logo-likearocket.png' },
-  { id: 'biskit', name: 'Biskit', logo: '/logo-biskit.png' }
+  { id: 'biskit', name: 'Biskit Agencia', logo: '/logo-biskit.png' }
 ];
 
 export const AGENCY_LABELS: Record<Agency, string> = {
-  likearocket: 'Like a Rocket',
-  biskit: 'Biskit'
+  biskit: 'Biskit Agencia'
 };
 
 export interface CalendarContact {

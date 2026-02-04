@@ -225,7 +225,7 @@ const CalendarioDetalle = () => {
     if (cal) {
       setCalendar(cal);
       setSelectedResponsibles(cal.responsibles?.map(r => r.id) || []);
-      setSelectedAgencies(cal.agencies || ['likearocket']);
+      setSelectedAgencies((cal.agencies || ['biskit']) as Agency[]);
       if (cal.calendar_contact) {
         setContactForm({
           contact_name: cal.calendar_contact.contact_name,
@@ -1293,10 +1293,8 @@ const CalendarioDetalle = () => {
     }
   };
 
-  // Determine if calendar is Biskit-only for theming
-  const isBiskitOnly = calendar.agencies?.length === 1 && calendar.agencies[0] === 'biskit';
-  const isLikeARocketOnly = !calendar.agencies || calendar.agencies.length === 0 || 
-    (calendar.agencies.length === 1 && calendar.agencies[0] === 'likearocket');
+  // Biskit theming - always use Biskit styling
+  const isBiskitOnly = true;
 
   return (
     <div className="min-h-screen bg-background">

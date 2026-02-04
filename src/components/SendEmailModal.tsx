@@ -51,16 +51,12 @@ interface TemplateConfig {
   requiresShareLink?: boolean;
 }
 
-const getAgencyTeamName = (agencies?: string[]): string => {
-  const isBiskitOnly = agencies?.length === 1 && agencies[0] === 'biskit';
-  if (isBiskitOnly) {
-    return 'Equipo Biskit';
-  }
-  return 'Equipo Like a Rocket';
+const getAgencyTeamName = (): string => {
+  return 'Equipo Biskit Agencia';
 };
 
-const getEmailTemplates = (contactName: string, shareLink: string, agencies?: string[]): Record<TemplateId, TemplateConfig> => {
-  const teamName = getAgencyTeamName(agencies);
+const getEmailTemplates = (contactName: string, shareLink: string): Record<TemplateId, TemplateConfig> => {
+  const teamName = getAgencyTeamName();
   
   return {
     blank: {
@@ -150,7 +146,7 @@ export const SendEmailModal = ({
   agencies,
   sendCalendarOnly = false
 }: SendEmailModalProps) => {
-  const templates = getEmailTemplates(contactName || '', shareLink || '', agencies);
+  const templates = getEmailTemplates(contactName || '', shareLink || '');
   
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -187,7 +183,7 @@ export const SendEmailModal = ({
     setSelectedTemplate(templateId);
     
     // Regenerate templates with current values to get fresh body
-    const currentTemplates = getEmailTemplates(contactName || '', shareLink || '', agencies);
+    const currentTemplates = getEmailTemplates(contactName || '', shareLink || '');
     const template = currentTemplates[templateId];
     
     if (template.subject) {

@@ -110,7 +110,7 @@ const CalendarioContenidos = () => {
       <header className="border-b border-border bg-card sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/logo-likearocket.png" alt="Like a Rocket" className="h-8 w-auto" />
+            <img src="/logo-biskit.png" alt="Biskit Agencia" className="h-8 w-auto" />
             <span className="text-lg font-semibold text-foreground">Calendario de Contenidos</span>
           </div>
           <Button variant="ghost" size="sm" onClick={() => navigate('/calendarios')}>
