@@ -1,132 +1,174 @@
 
-# Plan: Unificación a Biskit Agencia
+# Plan: Tema Claro con Beige - Biskit Agencia
 
-## Resumen Ejecutivo
+## Resumen del Cambio
 
-Unificaremos todo el proyecto bajo la marca **Biskit Agencia**, eliminando el sistema dual de agencias (Like a Rocket / Biskit) y aplicando el branding corporativo de Biskit: fondo negro con amarillo como color de acento.
-
----
-
-## 1. Cambios de Branding (Colores)
-
-### 1.1 Actualizar variables CSS (`src/index.css`)
-
-Modificaremos las variables CSS raíz para usar los colores de Biskit:
-
-| Variable actual | Nuevo valor | Descripción |
-|-----------------|-------------|-------------|
-| `--primary` | `54 100% 50%` | Amarillo Biskit como color primario |
-| `--background` | `0 0% 5%` | Fondo negro/oscuro |
-| `--foreground` | `0 0% 95%` | Texto claro |
-| `--card` | `0 0% 8%` | Tarjetas oscuras |
-| `--accent` | `54 100% 50%` | Amarillo para acentos |
-| `--ring` | `54 100% 50%` | Amarillo para focus |
-| `--highlight` | `54 100% 50%` | Amarillo para highlights |
-
-Se eliminarán los comentarios de "Like a Rocket" y las variables específicas de marca dual.
-
-### 1.2 Actualizar Tailwind Config (`tailwind.config.ts`)
-
-- Eliminar colores específicos de "brand-pink", "brand-teal", "brand-light"
-- Mantener colores biskit como principales
-- Simplificar la paleta de colores
+Transformaremos el diseño oscuro actual a un tema **claro, cálido y moderno** usando:
+- Fondo blanco puro para áreas principales
+- **Beige claro** para fondos secundarios y elementos sutiles (en lugar de gris)
+- Textos siempre negros/oscuros para máxima legibilidad
+- Amarillo Biskit SOLO para botones CTA y acentos puntuales
 
 ---
 
-## 2. Eliminar Sistema Dual de Agencias
+## 1. Nueva Paleta de Colores con Beige
 
-### 2.1 Actualizar tipos (`src/types/calendarCrm.ts`)
+### Tonos de Beige a Usar
 
-```text
-ANTES:
-  type Agency = 'likearocket' | 'biskit';
-  AGENCIES = [{ id: 'likearocket', ... }, { id: 'biskit', ... }]
+| Nombre | HSL | Hex Aprox. | Uso |
+|--------|-----|------------|-----|
+| Beige muy claro | `40 30% 98%` | `#FDFCFA` | Fondos sutiles |
+| Beige claro | `40 25% 96%` | `#F8F6F2` | Cards, secundarios |
+| Beige medio | `40 20% 92%` | `#EDE9E3` | Bordes, inputs |
+| Beige oscuro | `40 15% 55%` | `#998F82` | Texto secundario |
 
-DESPUES:
-  type Agency = 'biskit';
-  AGENCIES = [{ id: 'biskit', name: 'Biskit Agencia', logo: '/logo-biskit.png' }]
+### Variables CSS Actualizadas
+
+| Variable | Valor Actual | Nuevo Valor | Descripción |
+|----------|--------------|-------------|-------------|
+| `--background` | `0 0% 5%` (negro) | `0 0% 100%` | Blanco puro |
+| `--foreground` | `0 0% 95%` | `0 0% 9%` | Negro para texto |
+| `--card` | `0 0% 8%` | `40 25% 98%` | Beige muy claro |
+| `--card-foreground` | `0 0% 95%` | `0 0% 9%` | Negro |
+| `--secondary` | `0 0% 12%` | `40 25% 96%` | Beige claro |
+| `--muted` | `0 0% 15%` | `40 20% 96%` | Beige claro |
+| `--muted-foreground` | `0 0% 65%` | `40 15% 40%` | Beige oscuro |
+| `--border` | `0 0% 18%` | `40 20% 90%` | Beige para bordes |
+| `--input` | `0 0% 18%` | `40 20% 90%` | Bordes de inputs |
+| `--surface-elevated` | `0 0% 10%` | `40 25% 99%` | Casi blanco cálido |
+| `--border-subtle` | `0 0% 20%` | `40 20% 92%` | Bordes sutiles beige |
+
+### Colores que SE MANTIENEN:
+- `--primary`: `54 100% 50%` (Amarillo Biskit) - Solo para CTAs
+- `--primary-foreground`: `0 0% 5%` - Texto en botones
+- `--accent`: `54 100% 50%` - Acentos amarillos
+- `--ring`: `54 100% 50%` - Focus en inputs
+- `--destructive`: `0 84% 60%` - Errores/eliminar
+
+---
+
+## 2. Filosofía de Diseño
+
+### Reglas de Color:
+1. **Textos**: Negro (`--foreground`) o beige oscuro (`--muted-foreground`)
+2. **Amarillo**: EXCLUSIVO para CTAs, focus rings, y acentos decorativos
+3. **Fondos**: Blanco puro o beige claro (nunca gris)
+4. **Bordes**: Beige sutil, elegante
+
+### Sensación Visual:
+- Calidez: El beige aporta calidez sin ser invasivo
+- Elegancia: Aspecto premium y sofisticado
+- Modernidad: Limpio y minimalista
+- Tranquilidad: No agresivo ni abrumador
+
+---
+
+## 3. Cambios en CSS
+
+### Nuevas variables `:root` en `src/index.css`:
+
+```css
+:root {
+  /* Tema claro con beige - Biskit Agencia */
+  --background: 0 0% 100%;           /* Blanco puro */
+  --foreground: 0 0% 9%;             /* Negro para texto */
+
+  --card: 40 25% 98%;                /* Beige muy claro */
+  --card-foreground: 0 0% 9%;
+
+  --popover: 0 0% 100%;              /* Blanco */
+  --popover-foreground: 0 0% 9%;
+
+  /* Amarillo Biskit - SOLO CTAs */
+  --primary: 54 100% 50%;
+  --primary-foreground: 0 0% 5%;
+
+  --secondary: 40 25% 96%;           /* Beige claro */
+  --secondary-foreground: 0 0% 9%;
+
+  --muted: 40 20% 96%;               /* Beige suave */
+  --muted-foreground: 40 15% 40%;    /* Beige oscuro legible */
+
+  --accent: 54 100% 50%;             /* Amarillo */
+  --accent-foreground: 0 0% 5%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 40 20% 90%;              /* Beige para bordes */
+  --input: 40 20% 90%;
+  --ring: 54 100% 50%;               /* Focus amarillo */
+
+  /* Custom tokens */
+  --surface-elevated: 40 25% 99%;    /* Casi blanco cálido */
+  --text-label: 40 15% 35%;          /* Labels beige oscuro */
+  --text-heading: 0 0% 9%;           /* Headers negros */
+  --border-subtle: 40 20% 92%;       /* Bordes sutiles beige */
+  --highlight: 54 100% 50%;          /* Amarillo */
+}
 ```
 
-### 2.2 Actualizar página Home (`src/pages/CalendarioHome.tsx`)
+### Estilos de formularios:
 
-- Eliminar los dos botones de selección de agencia
-- Un solo botón CTA: "Crear Calendario"
-- Cambiar logo de Like a Rocket por logo Biskit
-- Actualizar footer con branding Biskit
-
-### 2.3 Actualizar listado de calendarios (`src/pages/CalendariosCrm.tsx`)
-
-- Eliminar tabs de filtro por agencia (Like a Rocket / Biskit / Todos)
-- Simplificar la vista sin filtros de agencia
-- Los calendarios existentes se mantendrán pero se mostrarán todos juntos
-
-### 2.4 Actualizar formulario nuevo calendario (`src/pages/CalendarioNuevo.tsx`)
-
-- Eliminar selector de agencias
-- Establecer "biskit" como agencia por defecto fija
-- Actualizar header con logo Biskit
-
-### 2.5 Actualizar páginas adicionales
-
-- `CalendarioContenidos.tsx`: Cambiar logo a Biskit
-- `CalendarioEditar.tsx`: Cambiar logo a Biskit
-- `CalendarioDetalle.tsx`: Simplificar lógica de theming, usar solo Biskit
+```css
+.form-input {
+  @apply w-full px-4 py-3 text-base 
+         bg-white border border-input rounded-lg 
+         text-foreground
+         placeholder:text-muted-foreground 
+         focus:outline-none focus:ring-2 focus:ring-primary/20 
+         focus:border-primary/50 transition-all;
+}
+```
 
 ---
 
-## 3. Actualizar Componentes de Compartir
+## 4. Comparación Visual
 
-### 3.1 `ShareDocumentCover.tsx`
-- Cambiar gradiente de header a amarillo Biskit
+### Antes (Oscuro):
+```text
+┌─────────────────────────────────┐
+│ [Fondo NEGRO]                   │
+│  ┌───────────────────────────┐  │
+│  │ [Card GRIS OSCURO]        │  │
+│  │  Texto blanco             │  │
+│  └───────────────────────────┘  │
+└─────────────────────────────────┘
+```
 
-### 3.2 `ShareDocumentFooter.tsx`
-- Actualizar branding si existe referencia a Like a Rocket
-
-### 3.3 `SendEmailModal.tsx`
-- Cambiar referencia "Equipo Like a Rocket" por "Equipo Biskit Agencia"
+### Después (Claro + Beige):
+```text
+┌─────────────────────────────────┐
+│ [Fondo BLANCO]                  │
+│  ┌───────────────────────────┐  │
+│  │ [Card BEIGE CLARO]        │  │
+│  │  Texto negro              │  │
+│  │  [Input blanco + borde]   │  │
+│  └───────────────────────────┘  │
+│                                 │
+│  [Botón Amarillo Biskit]        │
+└─────────────────────────────────┘
+```
 
 ---
 
-## 4. Actualizar Metadatos
-
-### 4.1 `index.html`
-- Título: "Calendario de Contenidos - Biskit Agencia"
-- Meta author: "Biskit Agencia"
-- Open Graph tags con nueva marca
-
----
-
-## 5. Archivos que NO se modifican
-
-- `/public/logo-biskit.png` - Ya existe y es correcto
-- Tablas de base de datos - Los calendarios existentes mantienen sus agencias guardadas
-- Edge functions - No requieren cambios
-
----
-
-## Resumen de Archivos a Modificar
+## 5. Archivos a Modificar
 
 | Archivo | Tipo de cambio |
 |---------|----------------|
-| `src/index.css` | Colores CSS |
-| `tailwind.config.ts` | Paleta de colores |
-| `src/types/calendarCrm.ts` | Simplificar tipos |
-| `src/pages/CalendarioHome.tsx` | UI + branding |
-| `src/pages/CalendariosCrm.tsx` | Eliminar filtros agencia |
-| `src/pages/CalendarioNuevo.tsx` | Eliminar selector |
-| `src/pages/CalendarioContenidos.tsx` | Logo |
-| `src/pages/CalendarioEditar.tsx` | Logo |
-| `src/pages/CalendarioDetalle.tsx` | Simplificar theming |
-| `src/components/SendEmailModal.tsx` | Nombre equipo |
-| `src/components/share/ShareDocumentCover.tsx` | Colores |
-| `index.html` | Metadatos |
+| `src/index.css` | Variables CSS completas + estilos base |
+
+La mayoría de componentes **heredarán automáticamente** el nuevo tema ya que usan las variables CSS. No requieren modificaciones directas.
 
 ---
 
-## Resultado Final
+## 6. Resultado Esperado
 
-- Toda la aplicación tendrá el branding de Biskit Agencia
-- Fondo oscuro con acentos amarillos
-- Un solo flujo de creación de calendarios (sin selección de agencia)
-- Los calendarios existentes seguirán funcionando
+- **Fondo**: Blanco limpio
+- **Cards y secciones**: Beige claro cálido
+- **Textos**: Negro/beige oscuro (siempre legibles)
+- **Inputs**: Fondo blanco con borde beige
+- **CTAs**: Botones amarillos Biskit (único color vibrante)
+- **Bordes**: Beige sutil y elegante
+- **Sensación**: Moderna, tranquila, profesional
 
