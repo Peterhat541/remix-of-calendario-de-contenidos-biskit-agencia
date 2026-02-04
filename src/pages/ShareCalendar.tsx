@@ -10,8 +10,9 @@ import { toast } from 'sonner';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 const ShareCalendar = () => {
-  const { token } = useParams<{ token: string }>();
+  const { token, slug } = useParams<{ token?: string; slug?: string }>();
   const [document, setDocument] = useState<ShareDocument | null>(null);
+  const [resolvedToken, setResolvedToken] = useState<string | null>(null);
   const [proposal, setProposal] = useState<ProposalData>(createEmptyProposal());
   const [proposalId, setProposalId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,34 +24,59 @@ const ShareCalendar = () => {
   const [isApproving, setIsApproving] = useState(false);
 
   useEffect(() => {
-    if (token) {
+    const identifier = token || slug;
+    if (identifier) {
       console.log("ENTER SHARECALENDAR", {
         token,
+        slug,
         origin: window.location.origin,
         href: window.location.href,
       });
-      loadDocument();
+      resolveAndLoadDocument(identifier);
     }
-  }, [token]);
+  }, [token, slug]);
 
-  const loadDocument = async () => {
+  const resolveAndLoadDocument = async (identifier: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // First, get the share link to validate token
-      const { data: shareLink, error: linkError } = await supabase
-        .from('share_links')
-        .select('*')
-        .eq('token', token)
-        .eq('can_view', true)
-        .single();
+      let shareLink = null;
+      let linkError = null;
+      
+      // If we're on /c/:slug route, resolve by slug first
+      if (slug) {
+        const { data, error } = await supabase
+          .from('share_links')
+          .select('*')
+          .eq('slug', identifier)
+          .eq('can_view', true)
+          .single();
+        shareLink = data;
+        linkError = error;
+      }
+      
+      // If not found by slug or we're on /share/:token, try by token
+      if (!shareLink && token) {
+        const { data, error } = await supabase
+          .from('share_links')
+          .select('*')
+          .eq('token', identifier)
+          .eq('can_view', true)
+          .single();
+        shareLink = data;
+        linkError = error;
+      }
 
       if (linkError || !shareLink) {
         setError('Enlace no válido o caducado');
         setIsLoading(false);
         return;
       }
+
+      // Store the resolved token for later use
+      const actualToken = shareLink.token;
+      setResolvedToken(actualToken);
 
       // Check expiration
       if (shareLink.expires_at && new Date(shareLink.expires_at) < new Date()) {
@@ -85,7 +111,7 @@ const ShareCalendar = () => {
         if (
           calendar?.approval_status === 'approved_no_changes' &&
           calendar?.approved_at &&
-          calendar?.approved_via === token
+          calendar?.approved_via === actualToken
         ) {
           setIsApproved(true);
         }
@@ -95,7 +121,7 @@ const ShareCalendar = () => {
       const { data: existingProposal } = await supabase
         .from('proposals')
         .select('*')
-        .eq('token', token)
+        .eq('token', actualToken)
         .eq('document_id', shareLink.document_id)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -150,7 +176,8 @@ const ShareCalendar = () => {
   };
 
   const handleSubmitFeedback = async () => {
-    if (!token || !document) return;
+    const activeToken = resolvedToken || token;
+    if (!activeToken || !document) return;
 
     const changes = countProposalChanges();
     
@@ -170,7 +197,7 @@ const ShareCalendar = () => {
       const { data, error } = await supabase.functions.invoke('send-feedback-notification', {
         body: {
           document_id: document.id,
-          token: token,
+          token: activeToken,
           proposal_id: proposalId,
           proposal_json: proposalJson,
         }
@@ -194,7 +221,8 @@ const ShareCalendar = () => {
   };
 
   const handleApproveWithoutChanges = async () => {
-    if (!token) return;
+    const activeToken = resolvedToken || token;
+    if (!activeToken) return;
 
     // Confirmation dialog
     const confirmed = window.confirm(
@@ -205,7 +233,7 @@ const ShareCalendar = () => {
     setIsApproving(true);
     try {
       const { data, error } = await supabase.functions.invoke('approve-calendar', {
-        body: { token }
+        body: { token: activeToken }
       });
 
       if (error) throw error;

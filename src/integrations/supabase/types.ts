@@ -678,6 +678,7 @@ export type Database = {
           document_id: string
           expires_at: string | null
           id: string
+          slug: string | null
           token: string
         }
         Insert: {
@@ -687,6 +688,7 @@ export type Database = {
           document_id: string
           expires_at?: string | null
           id?: string
+          slug?: string | null
           token: string
         }
         Update: {
@@ -696,6 +698,7 @@ export type Database = {
           document_id?: string
           expires_at?: string | null
           id?: string
+          slug?: string | null
           token?: string
         }
         Relationships: [
