@@ -226,6 +226,18 @@ const CalendarioDetalle = () => {
       setCalendar(cal);
       setSelectedResponsibles(cal.responsibles?.map(r => r.id) || []);
       setSelectedAgencies((cal.agencies || ['biskit']) as Agency[]);
+      
+      // Initialize visible months with all months from the calendar range
+      const start = parseISO(cal.month_start);
+      const end = parseISO(cal.month_end);
+      const allMonthKeys: string[] = [];
+      let current = start;
+      while (current <= end) {
+        allMonthKeys.push(format(current, 'yyyy-MM'));
+        current = new Date(current.getFullYear(), current.getMonth() + 1, 1);
+      }
+      setSelectedVisibleMonths(allMonthKeys);
+      
       if (cal.calendar_contact) {
         setContactForm({
           contact_name: cal.calendar_contact.contact_name,
@@ -1743,35 +1755,32 @@ const CalendarioDetalle = () => {
                       <label 
                         key={month.key}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer border transition-colors ${
-                          selectedVisibleMonths.includes(month.key) || selectedVisibleMonths.length === 0
+                          selectedVisibleMonths.includes(month.key)
                             ? 'bg-primary/10 border-primary/30 text-foreground font-medium'
                             : 'bg-muted border-border text-muted-foreground'
                         }`}
                       >
                         <input
                           type="checkbox"
-                          checked={selectedVisibleMonths.includes(month.key) || selectedVisibleMonths.length === 0}
-                          onChange={() => {
-                            if (selectedVisibleMonths.length === 0) {
-                              // First selection: select all except this one, or just this one
-                              const allKeys = availableMonths.map(m => m.key);
-                              setSelectedVisibleMonths([month.key]);
-                            } else {
-                              toggleMonthVisibility(month.key);
-                            }
-                          }}
+                          checked={selectedVisibleMonths.includes(month.key)}
+                          onChange={() => toggleMonthVisibility(month.key)}
                           className="rounded"
                         />
                         <span className="text-sm">{month.label}</span>
                       </label>
                     ))}
                   </div>
+                  {selectedVisibleMonths.length === 0 && (
+                    <p className="text-destructive text-xs mt-2">
+                      ⚠️ Selecciona al menos un mes para compartir
+                    </p>
+                  )}
                   {selectedVisibleMonths.length > 0 && selectedVisibleMonths.length < availableMonths.length && (
                     <p className="text-xs text-muted-foreground mt-2">
                       Se compartirán {selectedVisibleMonths.length} de {availableMonths.length} meses
                     </p>
                   )}
-                  {(selectedVisibleMonths.length === 0 || selectedVisibleMonths.length === availableMonths.length) && (
+                  {selectedVisibleMonths.length === availableMonths.length && (
                     <p className="text-xs text-muted-foreground mt-2">
                       Se compartirán todos los meses
                     </p>
