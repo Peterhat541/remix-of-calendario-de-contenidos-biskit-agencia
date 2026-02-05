@@ -1,4 +1,5 @@
-import html2pdf from "html2pdf.js";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 import { 
   CalendarMeta, 
   CalendarMonth, 
@@ -501,6 +502,9 @@ export async function generateCalendarPDF(
     line-height: 1.6;
   `;
 
+  // Append to document temporarily for rendering
+  document.body.appendChild(container);
+
   // Wait for images to load
   const images = container.querySelectorAll('img');
   const imagePromises = Array.from(images).map(img => {
@@ -518,30 +522,47 @@ export async function generateCalendarPDF(
 
   const filename = `Calendario_${sanitizeFilename(calendarMeta.client_name || 'contenidos')}_${calendarMeta.month_start}_${calendarMeta.month_end}.pdf`;
 
-  const opt = {
-    margin: [0, 0, 0, 0] as [number, number, number, number],
-    filename,
-    image: { type: "jpeg" as const, quality: 0.98 },
-    html2canvas: {
+  // Find all page elements (each div with min-height: 100vh represents a page)
+  const pages = container.querySelectorAll<HTMLElement>(':scope > div');
+  
+  // A4 dimensions in mm
+  const pdfWidth = 210;
+  const pdfHeight = 297;
+  
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+  });
+
+  for (let i = 0; i < pages.length; i++) {
+    const page = pages[i];
+    
+    // Render page to canvas
+    const canvas = await html2canvas(page, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
-      letterRendering: true,
       logging: false,
-    },
-    jsPDF: {
-      unit: "mm" as const,
-      format: "a4" as const,
-      orientation: "portrait" as const,
-    },
-    pagebreak: {
-      mode: ["avoid-all", "css", "legacy"] as ("avoid-all" | "css" | "legacy")[],
-    },
-  };
+      backgroundColor: '#ffffff',
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+    
+    if (i > 0) {
+      pdf.addPage();
+    }
+    
+    // Add image to fill the entire page
+    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+  }
+
+  // Clean up
+  document.body.removeChild(container);
 
   if (returnBlob) {
-    return await html2pdf().set(opt).from(container).outputPdf('blob');
+    return pdf.output('blob');
   } else {
-    await html2pdf().set(opt).from(container).save();
+    pdf.save(filename);
   }
 }
