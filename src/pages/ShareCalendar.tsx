@@ -200,6 +200,7 @@ const ShareCalendar = () => {
           token: activeToken,
           proposal_id: proposalId,
           proposal_json: proposalJson,
+          publicBaseUrl: window.location.origin,
         }
       });
 

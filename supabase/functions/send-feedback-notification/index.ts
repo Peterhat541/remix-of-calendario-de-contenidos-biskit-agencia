@@ -7,7 +7,7 @@ const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 interface FeedbackRequest {
@@ -15,6 +15,7 @@ interface FeedbackRequest {
   token: string;
   proposal_id?: string;
   proposal_json: Record<string, unknown>;
+  publicBaseUrl?: string;
 }
 
 interface PostProposal {
@@ -35,7 +36,7 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { document_id, token, proposal_id, proposal_json }: FeedbackRequest = await req.json();
+    const { document_id, token, proposal_id, proposal_json, publicBaseUrl }: FeedbackRequest = await req.json();
 
     console.log("FEEDBACK_NOTIFY_START", { document_id, token, proposal_id });
 
@@ -182,7 +183,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    const fromEmail = Deno.env.get("FROM_EMAIL") || "Like a Rocket <noreply@likearocket.es>";
+    const fromEmail = Deno.env.get("FROM_EMAIL") || "Biskit Agencia <noreply@biskitagencia.com>";
 
     console.log("FEEDBACK_NOTIFY_EMAILS", { 
       calendarId, 
@@ -207,7 +208,7 @@ const handler = async (req: Request): Promise<Response> => {
     const totalChanges = titleChanges + copyChanges + totalComments + totalNotes;
 
     // 7. Send emails if there are responsibles
-    const appUrl = "https://likearocket-calendario.lovable.app";
+    const appUrl = publicBaseUrl || "https://clientesbiskit.lovable.app";
     const internalLink = `${appUrl}/calendarios/${calendarId}`;
     const publicLink = `${appUrl}/share/${token}`;
 
