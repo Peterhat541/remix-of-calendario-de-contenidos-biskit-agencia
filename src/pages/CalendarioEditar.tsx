@@ -257,7 +257,7 @@ const CalendarioEditar = () => {
             : null,
           post_order: monthIndex * 100 + postIndex
         }))
-      ).filter(p => p.day_of_month || p.title || p.copy);
+      ).filter(p => p.day_of_month != null || (p.title && p.title.trim() !== '') || (p.copy && p.copy.trim() !== '') || p.image_url);
 
       if (postsToSave.length > 0) {
         const { error: postsError } = await supabase
