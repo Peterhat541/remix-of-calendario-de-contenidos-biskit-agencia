@@ -234,39 +234,74 @@ const CalendarioEditar = () => {
     toast.loading(hasClientFeedback ? 'Guardando y publicando actualización...' : 'Guardando cambios...', { id: 'save-changes' });
 
     try {
-      // Delete existing posts
-      await supabase
-        .from('calendar_posts')
-        .delete()
-        .eq('calendar_id', id);
-
-      // Save new posts
+      // Build posts to save (with all fields)
       const postsToSave = months.flatMap((month, monthIndex) =>
-        month.posts.map((post, postIndex) => ({
-          calendar_id: id,
-          month_name: month.month,
-          month_year: month.year || new Date().getFullYear(),
-          day_of_month: post.day_of_month,
-          title: post.title || null,
-          copy: post.copy || null,
-          image_source: post.image.source,
-          image_url: post.image.source === 'clipboard'
+        month.posts.map((post, postIndex) => {
+          const imageUrl = post.image.source === 'clipboard'
             ? post.image.clipboard_data_url
             : post.image.source === 'file'
             ? post.image.file_url
-            : null,
-          post_order: monthIndex * 100 + postIndex
-        }))
+            : null;
+
+          // Check if this post has a real UUID (existing) or a temp ID (new)
+          const isExistingPost = post.id && !post.id.startsWith('post-') && post.id.length === 36;
+
+          return {
+            ...(isExistingPost ? { id: post.id } : {}),
+            calendar_id: id,
+            month_name: month.month,
+            month_year: month.year || new Date().getFullYear(),
+            day_of_month: post.day_of_month,
+            title: post.title || null,
+            copy: post.copy || null,
+            image_source: post.image.source,
+            image_url: imageUrl,
+            post_order: monthIndex * 100 + postIndex,
+            post_format: (post as any).post_format || null,
+            objective: (post as any).objective || null,
+            theme_context: (post as any).theme_context || null,
+            ai_generated: (post as any).ai_generated || false,
+            ai_copy_prompt: (post as any).ai_copy_prompt || null,
+            ai_image_prompt: (post as any).ai_image_prompt || null,
+          };
+        })
       ).filter(p => p.day_of_month != null || (p.title && p.title.trim() !== '') || (p.copy && p.copy.trim() !== '') || p.image_url);
 
+      // UPSERT: insert new posts, update existing ones
       if (postsToSave.length > 0) {
-        const { error: postsError } = await supabase
+        const { error: upsertError } = await supabase
           .from('calendar_posts')
-          .insert(postsToSave);
+          .upsert(postsToSave, { onConflict: 'id' });
 
-        if (postsError) {
-          console.error('Error saving posts:', postsError);
-          throw postsError;
+        if (upsertError) {
+          console.error('Error upserting posts:', upsertError);
+          throw upsertError;
+        }
+      }
+
+      // DELETE only posts that were removed by the user
+      const currentPostIds = postsToSave
+        .filter(p => p.id)
+        .map(p => p.id!);
+
+      // Get all existing post IDs for this calendar
+      const { data: existingPosts } = await supabase
+        .from('calendar_posts')
+        .select('id')
+        .eq('calendar_id', id);
+
+      const existingIds = (existingPosts || []).map(p => p.id);
+      const idsToDelete = existingIds.filter(eid => !currentPostIds.includes(eid));
+
+      if (idsToDelete.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('calendar_posts')
+          .delete()
+          .in('id', idsToDelete);
+
+        if (deleteError) {
+          console.error('Error deleting removed posts:', deleteError);
+          // Non-fatal: upsert succeeded, just log
         }
       }
 

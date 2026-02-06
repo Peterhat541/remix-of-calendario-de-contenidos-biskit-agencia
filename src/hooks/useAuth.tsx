@@ -58,9 +58,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // Safety timeout: if loading stays true for 5s, force it to false
+    const safetyTimeout = setTimeout(() => {
+      setLoading((current) => {
+        if (current) {
+          console.warn("Auth loading timeout – forcing loading=false");
+          return false;
+        }
+        return current;
+      });
+    }, 5000);
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log("onAuthStateChange", event);
+
+        // Handle invalid/expired tokens
+        if (event === "SIGNED_OUT" || event === "TOKEN_REFRESHED") {
+          if (!session) {
+            // Token refresh failed or user signed out
+            setSession(null);
+            setUser(null);
+            setProfile(null);
+            setRoles([]);
+            setLoading(false);
+            return;
+          }
+        }
+
         setSession(session);
         setUser(session?.user ?? null);
 
@@ -78,7 +104,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.warn("getSession error:", error.message);
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -87,7 +120,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(safetyTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
