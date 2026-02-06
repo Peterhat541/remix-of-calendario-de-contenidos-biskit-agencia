@@ -43,6 +43,15 @@ const CalendarPostEditor = ({
 
   const formatOptions = POST_FORMATS[channel] || POST_FORMATS['Instagram'] || [];
 
+  // Sync editData to parent whenever it changes during editing
+  const editDataRef = useRef(editData);
+  useEffect(() => {
+    if (isEditing && editData !== editDataRef.current) {
+      onUpdate(editData);
+    }
+    editDataRef.current = editData;
+  }, [editData, isEditing]);
+
   const handleSave = () => {
     onUpdate(editData);
     setIsEditing(false);
@@ -50,6 +59,7 @@ const CalendarPostEditor = ({
 
   const handleCancel = () => {
     setEditData(post);
+    onUpdate(post);
     setIsEditing(false);
   };
 

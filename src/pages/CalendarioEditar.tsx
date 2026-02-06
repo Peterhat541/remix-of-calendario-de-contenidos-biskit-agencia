@@ -270,7 +270,55 @@ const CalendarioEditar = () => {
         }
       }
 
-      // Record edit in history
+      // Update existing shared document if one exists
+      const { data: existingDocs } = await supabase
+        .from('documents')
+        .select('id')
+        .eq('calendar_id', id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (existingDocs && existingDocs.length > 0) {
+        const savedPostsForDoc = postsToSave.map(p => ({
+          id: crypto.randomUUID(),
+          day_of_month: p.day_of_month,
+          image: {
+            source: p.image_source || 'none',
+            clipboard_data_url: p.image_source === 'clipboard' ? (p.image_url || '') : '',
+            file_url: p.image_source === 'file' ? (p.image_url || '') : ''
+          },
+          title: p.title || '',
+          copy: p.copy || ''
+        }));
+
+        // Group by month
+        const monthsMap = new Map<string, any>();
+        postsToSave.forEach((p, idx) => {
+          const key = `${p.month_name}-${p.month_year}`;
+          if (!monthsMap.has(key)) {
+            monthsMap.set(key, { month: p.month_name, year: p.month_year, posts: [] });
+          }
+          monthsMap.get(key).posts.push(savedPostsForDoc[idx]);
+        });
+
+        const contentJson = {
+          calendar: {
+            client_name: calendarMeta.client_name,
+            brand: calendarMeta.brand,
+            channel: calendarMeta.channel,
+            month_start: calendarMeta.month_start,
+            month_end: calendarMeta.month_end,
+            responsibles: responsibleEmails
+          },
+          months: Array.from(monthsMap.values())
+        };
+
+        await supabase
+          .from('documents')
+          .update({ content_json: contentJson, updated_at: new Date().toISOString() })
+          .eq('id', existingDocs[0].id);
+      }
+
       await supabase
         .from('content_calendar_edits')
         .insert([{
