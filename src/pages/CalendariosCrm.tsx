@@ -397,7 +397,7 @@ function CalendarListView({
               : "—";
             const dateIso = calendar.updated_at || calendar.created_at;
             const dateLabel = dateIso ? formatShortDate(dateIso) : "";
-            const agencies = calendar.agencies || ['likearocket'];
+            const agencies = calendar.agencies || ['biskit'];
 
             return (
               <TableRow 
@@ -418,7 +418,7 @@ function CalendarListView({
                               : 'bg-accent/10 text-accent border-accent/30'
                           }`}
                         >
-                          {agency === 'likearocket' ? 'LAR' : 'BSK'}
+                          BSK
                         </Badge>
                       ))}
                     </div>
@@ -519,7 +519,7 @@ function CalendarCard({
 
   const responsibles = calendar.responsibles ?? [];
   const visibleResp = responsibles.slice(0, 2);
-  const agencies = calendar.agencies || ['likearocket'];
+  const agencies = calendar.agencies || ['biskit'];
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -583,7 +583,7 @@ function CalendarCard({
                   : 'bg-accent/10 text-accent border-accent/30'
               }`}
             >
-              {agency === 'likearocket' ? 'LAR' : 'BSK'}
+              BSK
             </Badge>
           ))}
         </div>

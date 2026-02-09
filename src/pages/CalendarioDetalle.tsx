@@ -1402,8 +1402,8 @@ const CalendarioDetalle = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img 
-              src={isBiskitOnly ? "/logo-biskit.png?v=20251229" : "/logo-likearocket.png?v=20251229"} 
-              alt={isBiskitOnly ? "Biskit Agencia" : "Like a Rocket"} 
+              src="/logo-biskit.png?v=20251229" 
+              alt="Biskit Agencia"
               className="h-8 w-auto" 
               loading="eager"
               onError={(e) => {
@@ -1568,8 +1568,8 @@ const CalendarioDetalle = () => {
                         </Badge>
                       ))
                     ) : (
-                      <Badge variant="outline" className="bg-accent/10 text-accent border-accent/30">
-                        Like a Rocket
+                      <Badge variant="outline" className="bg-biskit-bg text-biskit-yellow border-biskit-yellow/30">
+                        Biskit Agencia
                       </Badge>
                     )}
                   </div>

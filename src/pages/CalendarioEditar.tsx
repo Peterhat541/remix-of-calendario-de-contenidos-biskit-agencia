@@ -267,15 +267,33 @@ const CalendarioEditar = () => {
         })
       ).filter(p => p.day_of_month != null || (p.title && p.title.trim() !== '') || (p.copy && p.copy.trim() !== '') || p.image_url);
 
-      // UPSERT: insert new posts, update existing ones
-      if (postsToSave.length > 0) {
+      // Separate new posts (no real ID) from existing posts (UUID)
+      const existingPostsToUpsert = postsToSave.filter(p => p.id);
+      const newPostsToInsert = postsToSave
+        .filter(p => !p.id)
+        .map(p => ({ ...p, id: crypto.randomUUID() }));
+
+      // UPSERT existing posts
+      if (existingPostsToUpsert.length > 0) {
         const { error: upsertError } = await supabase
           .from('calendar_posts')
-          .upsert(postsToSave, { onConflict: 'id' });
+          .upsert(existingPostsToUpsert, { onConflict: 'id' });
 
         if (upsertError) {
           console.error('Error upserting posts:', upsertError);
           throw upsertError;
+        }
+      }
+
+      // INSERT new posts
+      if (newPostsToInsert.length > 0) {
+        const { error: insertError } = await supabase
+          .from('calendar_posts')
+          .insert(newPostsToInsert);
+
+        if (insertError) {
+          console.error('Error inserting new posts:', insertError);
+          throw insertError;
         }
       }
 

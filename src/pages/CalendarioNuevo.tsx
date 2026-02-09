@@ -119,7 +119,7 @@ const CalendarioNuevo = () => {
       // Set agencies from query params
       const agenciesParam = searchParams.get('agencies');
       if (agenciesParam) {
-        const agencies = agenciesParam.split(',').filter(a => ['likearocket', 'biskit'].includes(a)) as Agency[];
+        const agencies = agenciesParam.split(',').filter(a => a === 'biskit') as Agency[];
         if (agencies.length > 0) {
           setSelectedAgencies(agencies);
         }

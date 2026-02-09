@@ -406,7 +406,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
               </div>
               <div class="footer">
-                <p class="footer-text">Enviado desde <a href="https://likearocket.es" class="footer-brand">Like a Rocket</a></p>
+                <p class="footer-text">Enviado desde <a href="https://biskitagencia.com" class="footer-brand">Biskit Agencia</a></p>
               </div>
             </div>
           </div>

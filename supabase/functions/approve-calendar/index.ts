@@ -153,7 +153,7 @@ const handler = async (req: Request): Promise<Response> => {
         .filter(Boolean) as string[];
     }
 
-    const fromEmail = Deno.env.get("FROM_EMAIL") || "Like a Rocket <noreply@likearocket.es>";
+    const fromEmail = Deno.env.get("FROM_EMAIL") || "Biskit Agencia <noreply@biskitagencia.com>";
 
     console.log("APPROVE_CALENDAR_EMAILS", { 
       calendarId, 
@@ -162,7 +162,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     // 6. Send email to responsibles
-    const appUrl = "https://likearocket-calendario.lovable.app";
+    const appUrl = "https://clientesbiskit.lovable.app";
     const internalLink = `${appUrl}/calendarios/${calendarId}`;
     const publicLink = `${appUrl}/share/${token}`;
 
@@ -347,7 +347,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
               </div>
               <div class="footer">
-                <p class="footer-text">Enviado desde <a href="https://likearocket.es" class="footer-brand">Like a Rocket</a></p>
+                <p class="footer-text">Enviado desde <a href="https://biskitagencia.com" class="footer-brand">Biskit Agencia</a></p>
               </div>
             </div>
           </div>

@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "Like a Rocket <onboarding@resend.dev>";
+const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "Biskit Agencia <noreply@biskitagencia.com>";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -273,7 +273,7 @@ serve(async (req: Request) => {
         ${feedbackHtml}
 
         <p class="muted">Gracias y seguimos en contacto.</p>
-        <p>Un saludo,<br />Equipo Like a Rocket</p>
+        <p>Un saludo,<br />Equipo Biskit Agencia</p>
 
         <div class="footer">Enviado automáticamente</div>
       </div>
