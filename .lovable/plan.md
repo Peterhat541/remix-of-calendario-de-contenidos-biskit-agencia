@@ -1,79 +1,94 @@
 
-# Plan: Corregir los 4 errores criticos
+# Plan: Corregir problemas de base de datos, acceso y eliminar referencias a "Like a Rocket"
 
-## Error 1: No se guardan los calendarios
+## 1. Problema de guardado de calendarios
 
-**Causa**: El guardado usa un patron destructivo: primero BORRA todos los posts y luego intenta insertarlos de nuevo. Si la insercion falla (timeout, error de red), los posts se pierden para siempre.
+**Diagnostico**: El patron UPSERT implementado anteriormente funciona correctamente para posts existentes. Sin embargo, hay un problema critico: cuando se crea un post nuevo (sin ID, porque empieza con "post-"), el objeto se envia sin campo `id`, pero el UPSERT con `onConflict: 'id'` necesita que todos los registros tengan el campo `id` o ninguno. Mezclar registros con y sin `id` puede causar conflictos.
 
-**Solucion**: Cambiar a un patron seguro de UPSERT en `src/pages/CalendarioEditar.tsx`:
-- Primero insertar/actualizar todos los posts (upsert)
-- Solo despues borrar los posts que ya no existen en la interfaz
-- Incluir los campos que faltan: `post_format`, `objective`, `theme_context`, `ai_generated`, `ai_copy_prompt`, `ai_image_prompt`
-- Mejorar el manejo de errores: si falla el upsert, no borrar nada
+**Solucion**: Separar el guardado en dos operaciones:
+- Posts existentes (con UUID real): usar `.upsert()` con `onConflict: 'id'`
+- Posts nuevos (sin ID o con ID temporal): usar `.insert()` generando un UUID real con `crypto.randomUUID()`
 
-**Detalle tecnico**:
-```text
-ANTES (peligroso):
-  1. DELETE todos los posts
-  2. INSERT posts nuevos (si falla, todo perdido)
-
-DESPUES (seguro):
-  1. Recoger IDs de posts en la interfaz
-  2. UPSERT cada post (insert si es nuevo, update si existe)
-  3. DELETE solo los posts que el usuario elimino
-  4. Si falla, los datos originales siguen intactos
-```
-
-Se necesita una migracion para crear una funcion de upsert o usar el metodo `.upsert()` del SDK con `onConflict: 'id'`. Los posts nuevos generados en el frontend usan IDs temporales (tipo `post-xxxxx`), asi que se insertaran como nuevos y los existentes (con UUID real) se actualizaran.
+**Archivo**: `src/pages/CalendarioEditar.tsx`
 
 ---
 
-## Error 2: Anadir un mes nuevo borra todo el contenido
+## 2. Acceso completo para Sandra y Lucia
 
-**Causa**: Cuando se extiende el rango de fechas en `CalendarioDetalle.tsx` (funcion `handleExtendDates`), solo se actualiza `month_end` en la base de datos. Luego, al abrir el editor (`CalendarioEditar.tsx`), la funcion `loadCalendarData` regenera la estructura de meses con `generateMonthsArray`. Los posts existentes se asignan correctamente a sus meses, pero el problema esta en que los posts nuevos vacios del mes anadido NO tienen contenido, y la funcion `generateMonthsArray` devuelve meses con `posts: []`. Los posts existentes se cargan bien PERO el patron destructivo de guardado (Error 1) hace que si el usuario guarda sin rellenar el mes nuevo, se pierden posts que no pasan el filtro.
+**Diagnostico**: Sandra (admin) y Lucia (manager) ya tienen roles correctos en la base de datos. Las tablas principales (`content_calendars`, `calendar_posts`, `documents`, etc.) usan politicas RLS que permiten acceso a usuarios autenticados. No hay restriccion de acceso para ellas.
 
-**Solucion**: Al corregir el Error 1 con upsert, este problema se resuelve automaticamente. Los posts existentes nunca se borran a menos que el usuario los elimine explicitamente.
-
----
-
-## Error 3: El feedback del cliente no llega a los responsables
-
-**Causa**: Dos problemas en `supabase/functions/send-feedback-notification/index.ts`:
-
-1. **CORS incompletos** (linea 9-10): Faltan cabeceras que el cliente Supabase envia (`x-supabase-client-platform`, etc.), lo que puede causar que la peticion preflight falle.
-
-2. **URL interna incorrecta** (linea 210): La URL esta hardcodeada como `https://likearocket-calendario.lovable.app` cuando la URL real de produccion es `https://clientesbiskit.lovable.app`. Los emails con enlaces internos apuntan al sitio equivocado.
-
-3. **FROM_EMAIL**: El remitente configurado en la funcion (linea 185) usa `Like a Rocket` como fallback pero segun la configuracion del proyecto debe ser `Biskit Agencia <noreply@biskitagencia.com>`.
-
-**Solucion**: 
-- Actualizar las cabeceras CORS para incluir todas las necesarias
-- Recibir `publicBaseUrl` como parametro del body (igual que hace `publish-calendar-update`) en lugar de hardcodear la URL
-- Actualizar el fallback de FROM_EMAIL
-- Actualizar la llamada en `ShareCalendar.tsx` para enviar `publicBaseUrl`
+**Estado**: OK, no requiere cambios.
 
 ---
 
-## Error 4: La pagina no carga al iniciar sesion
+## 3. Eliminar TODAS las referencias a "Like a Rocket" / "likearocket"
 
-**Causa**: Los logs muestran `Invalid Refresh Token: Refresh Token Not Found`. Esto ocurre cuando el token de refresco almacenado en localStorage ya no es valido (sesion expirada o invalidada). El `AuthProvider` entra en un estado donde `loading` permanece `true` indefinidamente porque:
+Se han encontrado referencias en **8 ubicaciones** que necesitan limpieza:
 
-1. `getSession()` devuelve una sesion con token expirado
-2. `onAuthStateChange` intenta refrescar el token y falla
-3. El estado `loading` nunca se pone a `false` en el caso de error de refresco
+### 3.1 Edge Functions (4 archivos)
 
-Ademas, los logs de consola muestran: `Function components cannot be given refs` para `RouteGuard`. Esto es un warning de React que no deberia causar el bloqueo, pero indica que hay un intento de pasar una ref a un componente funcional.
+**`supabase/functions/send-calendar-email/index.ts`**
+- Linea 6: FROM_EMAIL fallback dice "Like a Rocket" -> cambiar a "Biskit Agencia"
+- Lineas 30-73: Funcion `getAgencyBranding` tiene ramas para "likearocket" y "both agencies" -> simplificar para usar solo branding Biskit
+- Eliminar SVG de Like a Rocket y las ramas condicionales innecesarias
 
-**Solucion** en `src/hooks/useAuth.tsx`:
-- Manejar el error de refresco de token: si `onAuthStateChange` recibe un evento `TOKEN_REFRESHED` con error o `SIGNED_OUT`, poner `loading = false`
-- Anadir un timeout de seguridad: si despues de 5 segundos `loading` sigue en `true`, forzarlo a `false`
-- Limpiar localStorage si el token es invalido para evitar el loop
+**`supabase/functions/publish-calendar-update/index.ts`**
+- Linea 6: FROM_EMAIL fallback "Like a Rocket" -> "Biskit Agencia"
+- Linea 276: "Equipo Like a Rocket" -> "Equipo Biskit Agencia"
+
+**`supabase/functions/approve-calendar/index.ts`**
+- Linea 156: FROM_EMAIL fallback "Like a Rocket" -> "Biskit Agencia"
+- Linea 165: URL hardcodeada `likearocket-calendario.lovable.app` -> `clientesbiskit.lovable.app`
+- Linea 350: Footer "Like a Rocket" -> "Biskit Agencia"
+
+**`supabase/functions/send-feedback-notification/index.ts`**
+- Linea 409: Footer "Like a Rocket" -> "Biskit Agencia"
+
+### 3.2 Frontend (4 archivos)
+
+**`src/hooks/useCalendarCrm.ts`**
+- Lineas 48 y 396: Fallback `['likearocket']` -> `['biskit']`
+
+**`src/pages/CalendariosCrm.tsx`**
+- Lineas 400, 421, 522, 586: Referencias a 'likearocket' en badges y fallbacks -> todo a 'biskit'/'BSK'
+
+**`src/pages/CalendarioDetalle.tsx`**
+- Lineas 1405-1406: Logo y alt fallback para "Like a Rocket" -> usar siempre Biskit
+- Lineas 1570-1573: Badge fallback "Like a Rocket" -> "Biskit Agencia"
+
+**`src/pages/CalendarioNuevo.tsx`**
+- Linea 122: Filtro de agencies incluye 'likearocket' -> eliminar
+
+**`src/utils/calendarPdfGenerator.ts`**
+- Linea 90: Logo `/logo-likearocket.png` -> `/logo-biskit.png`
+- Linea 164: "Generado con Like a Rocket" -> "Generado con Biskit Agencia"
+
+### 3.3 Migracion de datos (base de datos)
+
+- Cambiar el DEFAULT de la columna `agencies` en `content_calendars` de `ARRAY['likearocket']` a `ARRAY['biskit']`
+- Actualizar cualquier registro existente que todavia tenga 'likearocket' en el array de agencies (aunque la consulta muestra que todos ya son 'biskit')
 
 ---
 
-## Archivos a modificar
+## Resumen de archivos a modificar
 
-1. `src/pages/CalendarioEditar.tsx` - Cambiar DELETE+INSERT por UPSERT (errores 1 y 2)
-2. `supabase/functions/send-feedback-notification/index.ts` - CORS, URL, FROM_EMAIL (error 3)
-3. `src/pages/ShareCalendar.tsx` - Enviar publicBaseUrl al llamar feedback (error 3)
-4. `src/hooks/useAuth.tsx` - Timeout de seguridad y manejo de token invalido (error 4)
+| Archivo | Cambios |
+|---|---|
+| `src/pages/CalendarioEditar.tsx` | Separar insert/upsert para posts nuevos vs existentes |
+| `src/hooks/useCalendarCrm.ts` | Cambiar fallback agencies a 'biskit' |
+| `src/pages/CalendariosCrm.tsx` | Eliminar referencias 'likearocket' en badges |
+| `src/pages/CalendarioDetalle.tsx` | Eliminar logo/texto fallback Like a Rocket |
+| `src/pages/CalendarioNuevo.tsx` | Eliminar 'likearocket' del filtro de agencies |
+| `src/utils/calendarPdfGenerator.ts` | Logo y footer a Biskit Agencia |
+| `supabase/functions/send-calendar-email/index.ts` | Simplificar branding a solo Biskit |
+| `supabase/functions/publish-calendar-update/index.ts` | FROM_EMAIL y texto del email |
+| `supabase/functions/approve-calendar/index.ts` | FROM_EMAIL, URL hardcodeada, footer |
+| `supabase/functions/send-feedback-notification/index.ts` | Footer del email |
+| Migracion SQL | DEFAULT de agencies column |
+
+## Secuencia de implementacion
+
+1. Migracion SQL para cambiar el default de la columna agencies
+2. Corregir guardado en CalendarioEditar.tsx
+3. Limpiar referencias Like a Rocket en frontend (4 archivos)
+4. Limpiar edge functions (4 archivos) y desplegarlas
