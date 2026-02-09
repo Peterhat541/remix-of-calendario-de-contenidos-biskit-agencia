@@ -298,9 +298,10 @@ const CalendarioEditar = () => {
       }
 
       // DELETE only posts that were removed by the user
-      const currentPostIds = postsToSave
-        .filter(p => p.id)
-        .map(p => p.id!);
+      const currentPostIds = [
+        ...existingPostsToUpsert.map(p => p.id!),
+        ...newPostsToInsert.map(p => p.id),
+      ];
 
       // Get all existing post IDs for this calendar
       const { data: existingPosts } = await supabase
