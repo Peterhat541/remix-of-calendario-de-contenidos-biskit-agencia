@@ -1,36 +1,38 @@
 
-# Plan: Corregir el borrado accidental de posts nuevos al guardar
+# Fix: Restaurar acceso de clientes a enlaces compartidos
 
-## Problema encontrado
+## Problema
+Al securizar la tabla `share_links` (eliminando las políticas públicas de SELECT), se rompieron las políticas RLS de otras tablas que dependen de subqueries contra `share_links`:
 
-Hay un bug critico en la logica de guardado (`CalendarioEditar.tsx`): cuando se guardan posts **nuevos** (sin ID existente), se les asigna un UUID nuevo y se insertan correctamente. Pero inmediatamente despues, la logica de "limpieza" consulta TODOS los posts del calendario y borra los que no estan en la lista de IDs conocidos. Como los nuevos UUIDs no se incluyeron en esa lista, **los posts recien insertados se borran al instante**.
+- **documents**: La política "Anyone can view documents via share link" hace `EXISTS (SELECT 1 FROM share_links sl WHERE ...)`
+- **proposals**: Las políticas de SELECT y UPDATE hacen subqueries similares
+- **content_calendars**: La política de SELECT para ver el estado de aprobación también depende de `share_links`
 
-Esto afecta a cualquier usuario que anada posts nuevos. Si Sandra solo edita posts existentes, no ve el problema; Lucia, al crear posts nuevos, los pierde cada vez que guarda.
+Como los usuarios anónimos (clientes) ya no pueden leer `share_links`, todos estos subqueries devuelven vacío y el acceso falla.
 
 ## Solucion
 
-Un unico cambio en `src/pages/CalendarioEditar.tsx`, lineas 300-303:
-
-**Antes:**
-```text
-const currentPostIds = postsToSave
-  .filter(p => p.id)
-  .map(p => p.id!);
-```
-
-**Despues:**
-```text
-const currentPostIds = [
-  ...existingPostsToUpsert.map(p => p.id!),
-  ...newPostsToInsert.map(p => p.id),
-];
-```
-
-Esto incluye tanto los IDs de posts existentes como los UUIDs recien generados para posts nuevos, evitando que se borren accidentalmente.
+Crear una política SELECT restringida en `share_links` que permita acceso anónimo pero **solo para los subqueries internos de RLS**. Esto es seguro porque:
+- La función `validate_share_link` (SECURITY DEFINER) sigue siendo el punto de entrada principal
+- Los clientes no pueden hacer SELECT directo a `share_links` desde el frontend (no hay query directa en el código)
+- Pero las políticas RLS de otras tablas sí necesitan poder leer `share_links` internamente
 
 ## Detalles tecnicos
 
-- **Archivo**: `src/pages/CalendarioEditar.tsx`
-- **Lineas afectadas**: 300-303
-- **Riesgo**: Bajo, cambio puntual y aislado
-- **Impacto**: Ambos usuarios (Sandra y Lucia) podran guardar posts nuevos sin que se borren
+### Migracion SQL
+
+1. Crear una política SELECT en `share_links` que permita lectura pública pero solo de enlaces válidos (can_view = true, no expirados):
+
+```sql
+CREATE POLICY "Allow RLS subquery access for valid links"
+ON public.share_links FOR SELECT
+USING (
+  can_view = true 
+  AND (expires_at IS NULL OR expires_at > now())
+);
+```
+
+Esto restaura la funcionalidad de las políticas RLS existentes en `documents`, `proposals` y `content_calendars` sin exponer enlaces inválidos o expirados.
+
+### Sin cambios en el frontend
+El código de `ShareCalendar.tsx` ya usa `validate_share_link` como punto de entrada, por lo que no requiere modificaciones.
