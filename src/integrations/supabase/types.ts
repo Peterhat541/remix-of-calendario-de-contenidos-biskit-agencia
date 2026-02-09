@@ -817,6 +817,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      validate_share_link: {
+        Args: { _identifier: string }
+        Returns: {
+          can_propose: boolean
+          can_view: boolean
+          document_id: string
+          expires_at: string
+          id: string
+          slug: string
+          token: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "manager" | "member"
