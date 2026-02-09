@@ -3,7 +3,6 @@ export interface PostProposal {
   titleChange?: string;
   copyChange?: string;
   comment?: string;
-  note?: string;
 }
 
 export interface ProposalData {
@@ -77,7 +76,6 @@ export function getPostProposal(proposal: ProposalData, postId: string): PostPro
     postId,
     titleChange: undefined,
     copyChange: undefined,
-    comment: undefined,
-    note: undefined
+    comment: undefined
   };
 }

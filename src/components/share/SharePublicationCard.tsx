@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ProposalData, getPostProposal } from '@/types/shareCalendar';
-import { MessageSquare, StickyNote, ChevronDown, ChevronUp, ZoomIn } from 'lucide-react';
+import { MessageSquare, ChevronDown, ChevronUp, ZoomIn } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -25,7 +25,7 @@ interface SharePublicationCardProps {
   monthName: string;
   year: number;
   proposal: ProposalData;
-  onUpdateProposal: (postId: string, field: 'titleChange' | 'copyChange' | 'comment' | 'note', value: string) => void;
+  onUpdateProposal: (postId: string, field: 'titleChange' | 'copyChange' | 'comment', value: string) => void;
   isSubmitted: boolean;
 }
 
@@ -48,7 +48,7 @@ const SharePublicationCard = ({
     : '';
 
   const hasProposals = postProposal.titleChange || postProposal.copyChange || 
-    postProposal.comment || postProposal.note;
+    postProposal.comment;
 
   const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
@@ -151,7 +151,7 @@ const SharePublicationCard = ({
             </span>
             {hasProposals && (
               <span className="text-xs text-muted-foreground">
-                ({(postProposal.comment ? 1 : 0) + (postProposal.note ? 1 : 0) + (postProposal.titleChange ? 1 : 0) + (postProposal.copyChange ? 1 : 0)} cambios)
+                ({(postProposal.comment ? 1 : 0) + (postProposal.titleChange ? 1 : 0) + (postProposal.copyChange ? 1 : 0)} cambios)
               </span>
             )}
           </div>
@@ -210,23 +210,6 @@ const SharePublicationCard = ({
               />
             </div>
 
-            {/* Note */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <StickyNote className="h-4 w-4 text-amber-600" />
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Nota
-                </span>
-              </div>
-              
-              <Textarea
-                placeholder="Escriba aquí su nota..."
-                value={postProposal.note || ''}
-                onChange={(e) => onUpdateProposal(post.id, 'note', e.target.value)}
-                disabled={isSubmitted}
-                className="min-h-[80px] bg-white"
-              />
-            </div>
           </div>
         )}
       </div>

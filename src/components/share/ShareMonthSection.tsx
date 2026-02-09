@@ -19,7 +19,7 @@ interface ShareMonthSectionProps {
     }>;
   };
   proposal: ProposalData;
-  onUpdateProposal: (postId: string, field: 'titleChange' | 'copyChange' | 'comment' | 'note', value: string) => void;
+  onUpdateProposal: (postId: string, field: 'titleChange' | 'copyChange' | 'comment', value: string) => void;
   isSubmitted: boolean;
 }
 

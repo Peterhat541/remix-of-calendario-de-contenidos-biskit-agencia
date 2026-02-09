@@ -618,7 +618,7 @@ const CalendarioEditar = () => {
     return Object.keys(clientProposal.changes).filter(postId => {
       const change = clientProposal.changes[postId];
       return change.titleChange || change.copyChange || 
-        change.comment || change.note;
+        change.comment;
     });
   };
 
@@ -841,17 +841,6 @@ const CalendarioEditar = () => {
                             </div>
                           )}
 
-                          {/* Note */}
-                          {change.note && (
-                            <div className="p-3 bg-gray-50 dark:bg-gray-900/20 rounded border border-gray-200 dark:border-gray-700">
-                              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                                📝 Nota:
-                              </p>
-                              <p className="text-sm text-gray-800 dark:text-gray-200">
-                                {change.note}
-                              </p>
-                            </div>
-                          )}
                         </div>
                       );
                     })}
