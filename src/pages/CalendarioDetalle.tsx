@@ -1057,7 +1057,7 @@ const CalendarioDetalle = () => {
     Object.values(proposal.changes).forEach(change => {
       if (change.titleChange || change.copyChange) posts++;
       if (change.comment) comments++;
-      if (change.note) notes++;
+      
     });
     
     notes += proposal.generalNotes?.length || 0;
@@ -1664,14 +1664,6 @@ const CalendarioDetalle = () => {
                             </div>
                           )}
                           
-                          {change.note && (
-                            <div className="space-y-1">
-                              <span className="text-xs font-medium text-muted-foreground">Nota:</span>
-                              <p className="text-sm bg-purple-50 border-l-2 border-purple-500 pl-2 py-1 dark:bg-purple-950/30">
-                                {change.note}
-                              </p>
-                            </div>
-                          )}
                         </div>
                       ))}
                     </div>
@@ -2032,7 +2024,7 @@ const CalendarioDetalle = () => {
                       
                       const proposalChangesCount = item.proposal 
                         ? Object.values(item.proposal.changes).filter(c => 
-                            c.titleChange || c.copyChange || c.comment || c.note
+                            c.titleChange || c.copyChange || c.comment
                           ).length + (item.proposal.generalNotes?.length || 0)
                         : 0;
                       

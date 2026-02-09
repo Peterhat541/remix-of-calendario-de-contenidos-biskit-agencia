@@ -122,7 +122,7 @@ const ShareCalendar = () => {
     }
   };
 
-  const updatePostProposal = (postId: string, field: 'titleChange' | 'copyChange' | 'comment' | 'note', value: string) => {
+  const updatePostProposal = (postId: string, field: 'titleChange' | 'copyChange' | 'comment', value: string) => {
     setProposal(prev => {
       const current = getPostProposal(prev, postId);
       return {
@@ -143,16 +143,14 @@ const ShareCalendar = () => {
     let titleChanges = 0;
     let copyChanges = 0;
     let totalComments = 0;
-    let totalNotes = 0;
 
     Object.values(proposal.changes).forEach((postProposal) => {
       if (postProposal.titleChange) titleChanges++;
       if (postProposal.copyChange) copyChanges++;
       if (postProposal.comment) totalComments++;
-      if (postProposal.note) totalNotes++;
     });
 
-    return { titleChanges, copyChanges, totalComments, totalNotes, total: titleChanges + copyChanges + totalComments + totalNotes };
+    return { titleChanges, copyChanges, totalComments, total: titleChanges + copyChanges + totalComments };
   };
 
   const handleSubmitFeedback = async () => {
