@@ -41,32 +41,12 @@ const ShareCalendar = () => {
     setError(null);
 
     try {
-      let shareLink = null;
-      let linkError = null;
-      
-      // If we're on /c/:slug route, resolve by slug first
-      if (slug) {
-        const { data, error } = await supabase
-          .from('share_links')
-          .select('*')
-          .eq('slug', identifier)
-          .eq('can_view', true)
-          .single();
-        shareLink = data;
-        linkError = error;
-      }
-      
-      // If not found by slug or we're on /share/:token, try by token
-      if (!shareLink && token) {
-        const { data, error } = await supabase
-          .from('share_links')
-          .select('*')
-          .eq('token', identifier)
-          .eq('can_view', true)
-          .single();
-        shareLink = data;
-        linkError = error;
-      }
+      // Use SECURITY DEFINER function to validate the link
+      // This prevents enumeration of all share links
+      const { data: linkResults, error: linkError } = await supabase
+        .rpc('validate_share_link', { _identifier: identifier });
+
+      const shareLink = linkResults && linkResults.length > 0 ? linkResults[0] : null;
 
       if (linkError || !shareLink) {
         setError('Enlace no válido o caducado');
