@@ -45,7 +45,7 @@ export function useCalendarCrm() {
           return {
             ...cal,
             status: parseCalendarStatus(cal.status),
-            agencies: (cal.agencies as Agency[]) || ['likearocket'],
+            agencies: (cal.agencies as Agency[]) || ['biskit'],
             responsibles: responsibles?.map(r => r.team_member).filter(Boolean) || []
           } as ContentCalendar;
         })
@@ -393,7 +393,7 @@ export function useCalendarCrm() {
       return {
         ...data,
         status: parseCalendarStatus(data.status),
-        agencies: (data.agencies as Agency[]) || ['likearocket'],
+        agencies: (data.agencies as Agency[]) || ['biskit'],
         responsibles: responsibles?.map(r => r.team_member).filter(Boolean) || []
       } as ContentCalendar;
     } catch (error) {

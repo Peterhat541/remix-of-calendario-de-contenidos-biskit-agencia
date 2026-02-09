@@ -3,7 +3,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "Like a Rocket <onboarding@resend.dev>";
+const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "Biskit Agencia <noreply@biskitagencia.com>";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,52 +26,16 @@ interface SendEmailRequest {
   agencies?: string[];
 }
 
-// Get agency branding configuration
-const getAgencyBranding = (agencies: string[] | undefined) => {
-  const isBiskitOnly = agencies?.length === 1 && agencies[0] === 'biskit';
-  const isLikeARocketOnly = !agencies || agencies.length === 0 || 
-    (agencies.length === 1 && agencies[0] === 'likearocket');
-
-  // Use inline SVG data URLs for reliable logo display in emails
-  const likearocketLogoSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40'%3E%3Ctext x='0' y='30' font-family='Arial, sans-serif' font-size='24' font-weight='bold' fill='white'%3E🚀 Like a Rocket%3C/text%3E%3C/svg%3E`;
-  const biskitLogoSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40'%3E%3Ctext x='0' y='30' font-family='Arial, sans-serif' font-size='20' font-weight='bold' fill='%23facc15'%3EBISKIT AGENCIA%3C/text%3E%3C/svg%3E`;
-
-  if (isBiskitOnly) {
-    return {
-      name: 'Biskit Agencia',
-      headerBg: '#0a0a0a',
-      headerText: '#facc15',
-      accentColor: '#facc15',
-      badgeBg: '#1a1a1a',
-      badgeText: '#facc15',
-      logoSvg: biskitLogoSvg,
-      footerText: 'Enviado por Biskit Agencia'
-    };
-  } else if (isLikeARocketOnly) {
-    return {
-      name: 'Like a Rocket',
-      headerBg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      headerText: '#ffffff',
-      accentColor: '#667eea',
-      badgeBg: '#e0e7ff',
-      badgeText: '#4338ca',
-      logoSvg: likearocketLogoSvg,
-      footerText: 'Enviado por Like a Rocket'
-    };
-  } else {
-    // Both agencies
-    return {
-      name: 'Like a Rocket & Biskit',
-      headerBg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      headerText: '#ffffff',
-      accentColor: '#667eea',
-      badgeBg: '#e0e7ff',
-      badgeText: '#4338ca',
-      logoSvg: likearocketLogoSvg,
-      footerText: 'Enviado por Like a Rocket & Biskit'
-    };
-  }
-};
+// Biskit Agencia branding (single agency)
+const getBranding = () => ({
+  name: 'Biskit Agencia',
+  headerBg: '#0a0a0a',
+  headerText: '#facc15',
+  accentColor: '#facc15',
+  badgeBg: '#1a1a1a',
+  badgeText: '#facc15',
+  footerText: 'Enviado por Biskit Agencia'
+});
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
@@ -122,16 +86,13 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Get agency branding
-    const branding = getAgencyBranding(agencies);
+    // Get branding
+    const branding = getBranding();
 
     // Build CC list (all responsibles except the first one)
     const ccEmails = safeResponsibleEmails.length > 1 ? safeResponsibleEmails.slice(1) : undefined;
 
-    // Determine if header should use gradient or solid color
-    const headerStyle = branding.headerBg.includes('gradient') 
-      ? `background: ${branding.headerBg};` 
-      : `background-color: ${branding.headerBg};`;
+    const headerStyle = `background-color: ${branding.headerBg};`;
 
     // Build HTML email with agency branding
     const htmlContent = `

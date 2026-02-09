@@ -87,7 +87,7 @@ function createCoverPage(calendarMeta: CalendarMeta, months: CalendarMonth[]): s
     ">
       <!-- Header with Logo -->
       <div style="text-align: center; margin-bottom: 50px;">
-        <img src="/logo-likearocket.png" style="height: 60px; width: auto; margin-bottom: 30px;" onerror="this.style.display='none'" />
+        <img src="/logo-biskit.png" style="height: 60px; width: auto; margin-bottom: 30px;" onerror="this.style.display='none'" />
         <h1 style="
           font-size: 32px;
           font-weight: 700;
@@ -161,7 +161,7 @@ function createCoverPage(calendarMeta: CalendarMeta, months: CalendarMonth[]): s
         border-top: 1px solid #e5e7eb;
         padding-top: 20px;
       ">
-        Generado con Like a Rocket · ${new Date().toLocaleDateString('es-ES')}
+        Generado con Biskit Agencia · ${new Date().toLocaleDateString('es-ES')}
       </div>
     </div>
   `;
