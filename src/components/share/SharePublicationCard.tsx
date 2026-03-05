@@ -77,7 +77,7 @@ const SharePublicationCard = ({
       </div>
 
       {/* Main content */}
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="grid md:grid-cols-[320px_1fr] gap-8">
           {/* Image - larger and clickable */}
           <div>
@@ -163,7 +163,7 @@ const SharePublicationCard = ({
         </button>
 
         {showProposalSection && (
-          <div className="px-6 pb-6 space-y-6 bg-muted/10">
+          <div className="px-4 sm:px-6 pb-6 space-y-6 bg-muted/10">
             {/* Title proposal */}
             <div>
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">

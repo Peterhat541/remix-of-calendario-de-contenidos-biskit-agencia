@@ -294,7 +294,7 @@ const ShareCalendar = () => {
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
-      <div className="min-h-screen bg-muted/30 pb-24">
+      <div className="min-h-screen bg-muted/30 pb-40 sm:pb-24">
         {/* Document container */}
         <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12">
           {/* Cover / Introduction */}
