@@ -1,27 +1,23 @@
 
-# Simplificar feedback del cliente
+
+# Fix: Responsive móvil en la vista compartida del cliente
+
+## Problema
+En la captura se ve que el footer fijo con los botones "Aprobar sin modificaciones" y "Enviar feedback" se corta horizontalmente en móvil. Los botones no caben en una fila y el texto de estado se solapa con ellos.
 
 ## Cambios
 
-1. **Eliminar el campo "Nota"** del componente `SharePublicationCard.tsx` (líneas 173-188 aprox.)
-2. **Eliminar el campo "note"** del tipo `PostProposal` en `src/types/shareCalendar.ts`
-3. **Actualizar el contador** de cambios en el badge "Con propuestas" y el texto "(X cambios)" para no contar `note`
-4. **Renombrar visualmente** "Comentario" a solo "Comentario" (ya está así, se mantiene)
+### 1. `ShareDocumentFooter.tsx` - Footer responsive
+- Cambiar el layout del footer de `flex items-center justify-between` (horizontal) a **columna vertical en móvil** (`flex-col` en mobile, `sm:flex-row` en desktop)
+- Apilar los botones verticalmente en móvil: `flex-col sm:flex-row`
+- Hacer los botones `w-full` en móvil para que ocupen todo el ancho
+- Reducir padding en móvil: `px-4 py-3 sm:px-6 sm:py-4`
 
-## Detalles tecnicos
+### 2. `SharePublicationCard.tsx` - Cards responsive
+- El grid de imagen + contenido ya usa `md:grid-cols-[320px_1fr]` (se apila en móvil), esto está bien
+- Reducir padding en móvil: `p-4 sm:p-6` en el contenido principal
+- Reducir padding en la sección de propuestas: `px-4 sm:px-6`
 
-### `src/types/shareCalendar.ts`
-- Eliminar `note?: string` de `PostProposal`
+### 3. Espacio inferior para el footer
+- Asegurar que el contenido principal tenga `pb-40 sm:pb-24` para que el footer fijo no tape el último contenido en móvil (donde el footer será más alto al apilarse)
 
-### `src/components/share/SharePublicationCard.tsx`
-- Eliminar la seccion completa de "Nota" (icono StickyNote + Textarea)
-- Eliminar `note` de la variable `hasProposals`
-- Eliminar `note` del conteo de cambios
-- Eliminar import de `StickyNote`
-- Actualizar la interfaz `onUpdateProposal` para no incluir `'note'` como opcion
-
-### `src/components/share/ShareMonthSection.tsx`
-- Actualizar el tipo de `onUpdateProposal` para eliminar `'note'` de las opciones de field
-
-### Otros archivos que referencien `note` en propuestas
-- Verificar `ShareCalendar.tsx` y cualquier otro consumidor para eliminar referencias a `note`
