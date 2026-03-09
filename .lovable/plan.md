@@ -1,35 +1,23 @@
 
 
-# Fix: Enlace compartido no se puede generar — Políticas RLS restrictivas
+# Fix: Responsive móvil en la vista compartida del cliente
 
 ## Problema
-Las políticas RLS de las tablas `share_links` y `documents` para usuarios autenticados están marcadas como **RESTRICTIVE** (`Permissive: No`). En PostgreSQL, las políticas restrictivas solo funcionan como filtro adicional sobre políticas permisivas existentes. Como no hay ninguna política permisiva para usuarios autenticados en estas tablas, todas las operaciones (INSERT, UPDATE, DELETE, SELECT) fallan silenciosamente.
+En la captura se ve que el footer fijo con los botones "Aprobar sin modificaciones" y "Enviar feedback" se corta horizontalmente en móvil. Los botones no caben en una fila y el texto de estado se solapa con ellos.
 
-## Solución
-Reemplazar las políticas restrictivas por políticas **permisivas** en ambas tablas para usuarios autenticados.
+## Cambios
 
-## Detalles tecnicos
+### 1. `ShareDocumentFooter.tsx` - Footer responsive
+- Cambiar el layout del footer de `flex items-center justify-between` (horizontal) a **columna vertical en móvil** (`flex-col` en mobile, `sm:flex-row` en desktop)
+- Apilar los botones verticalmente en móvil: `flex-col sm:flex-row`
+- Hacer los botones `w-full` en móvil para que ocupen todo el ancho
+- Reducir padding en móvil: `px-4 py-3 sm:px-6 sm:py-4`
 
-### Migración SQL
+### 2. `SharePublicationCard.tsx` - Cards responsive
+- El grid de imagen + contenido ya usa `md:grid-cols-[320px_1fr]` (se apila en móvil), esto está bien
+- Reducir padding en móvil: `p-4 sm:p-6` en el contenido principal
+- Reducir padding en la sección de propuestas: `px-4 sm:px-6`
 
-```sql
--- Fix share_links: drop restrictive, create permissive
-DROP POLICY IF EXISTS "Authenticated users can manage share_links" ON public.share_links;
-CREATE POLICY "Authenticated users can manage share_links"
-ON public.share_links FOR ALL
-TO authenticated
-USING (true)
-WITH CHECK (true);
-
--- Fix documents: drop restrictive, create permissive
-DROP POLICY IF EXISTS "Authenticated users can manage documents" ON public.documents;
-CREATE POLICY "Authenticated users can manage documents"
-ON public.documents FOR ALL
-TO authenticated
-USING (true)
-WITH CHECK (true);
-```
-
-### Sin cambios en el frontend
-El código de generación de enlace en `CalendarioDetalle.tsx` es correcto. El fallo viene exclusivamente de las políticas RLS.
+### 3. Espacio inferior para el footer
+- Asegurar que el contenido principal tenga `pb-40 sm:pb-24` para que el footer fijo no tape el último contenido en móvil (donde el footer será más alto al apilarse)
 
