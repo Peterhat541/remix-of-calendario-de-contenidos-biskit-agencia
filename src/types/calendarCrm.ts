@@ -74,6 +74,7 @@ export interface ContentCalendarResponsible {
 export type CalendarEditAction = 
   | 'created' 
   | 'updated' 
+  | 'calendar_edited'
   | 'pdf_generated' 
   | 'status_changed' 
   | 'note_added' 

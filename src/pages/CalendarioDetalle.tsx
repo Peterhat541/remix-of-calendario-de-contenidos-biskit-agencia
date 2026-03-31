@@ -665,20 +665,24 @@ const CalendarioDetalle = () => {
         setShareLink(fullLink);
         setExistingVisibleMonths(visibleMonthsToSave);
 
-        // Record in history
-        await supabase
-          .from('content_calendar_edits')
-          .insert([{
-            calendar_id: id,
-            action: 'calendar_sent',
-            performed_by: user?.email || null,
-            details: {
-              timestamp: new Date().toISOString(),
-              share_link: fullLink,
-              visible_months: visibleMonthsToSave,
-              new_period: true
-            }
-          }]);
+        // Record in history (non-blocking)
+        try {
+          await supabase
+            .from('content_calendar_edits')
+            .insert([{
+              calendar_id: id,
+              action: 'calendar_sent',
+              performed_by: user?.email || null,
+              details: {
+                timestamp: new Date().toISOString(),
+                share_link: fullLink,
+                visible_months: visibleMonthsToSave,
+                new_period: true
+              }
+            }]);
+        } catch (historyErr) {
+          console.warn('Error recording edit history:', historyErr);
+        }
 
         toast.success('Nuevo enlace generado para este periodo');
       } else {
