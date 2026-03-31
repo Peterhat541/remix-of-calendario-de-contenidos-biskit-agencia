@@ -1,23 +1,46 @@
 
-
-# Fix: Responsive móvil en la vista compartida del cliente
+# Fix: Botón "Actualizar documento" falla silenciosamente
 
 ## Problema
-En la captura se ve que el footer fijo con los botones "Aprobar sin modificaciones" y "Enviar feedback" se corta horizontalmente en móvil. Los botones no caben en una fila y el texto de estado se solapa con ellos.
+La función `updateShareDocument` en `CalendarioDetalle.tsx` no comprueba los errores de las llamadas a Supabase en el flujo principal (líneas 700-707). Si la actualización del documento falla, el error se traga silenciosamente, y en algunos casos puede mostrar "éxito" cuando realmente falló.
 
-## Cambios
+Además, hay un problema potencial de lógica: cuando `visibleMonthsToSave` es `null` (todos los meses seleccionados) y `existingVisibleMonths` también es `null`, la comparación `JSON.stringify(null) !== JSON.stringify(null)` devuelve `false`, lo cual es correcto. Pero si `existingVisibleMonths` quedó como un array vacío o un valor inconsistente tras operaciones anteriores, la comparación podría dar un falso positivo de "cambio", forzando la creación de un nuevo documento/link que puede fallar.
 
-### 1. `ShareDocumentFooter.tsx` - Footer responsive
-- Cambiar el layout del footer de `flex items-center justify-between` (horizontal) a **columna vertical en móvil** (`flex-col` en mobile, `sm:flex-row` en desktop)
-- Apilar los botones verticalmente en móvil: `flex-col sm:flex-row`
-- Hacer los botones `w-full` en móvil para que ocupen todo el ancho
-- Reducir padding en móvil: `px-4 py-3 sm:px-6 sm:py-4`
+## Solución
 
-### 2. `SharePublicationCard.tsx` - Cards responsive
-- El grid de imagen + contenido ya usa `md:grid-cols-[320px_1fr]` (se apila en móvil), esto está bien
-- Reducir padding en móvil: `p-4 sm:p-6` en el contenido principal
-- Reducir padding en la sección de propuestas: `px-4 sm:px-6`
+### 1. `CalendarioDetalle.tsx` - Añadir manejo de errores explícito
 
-### 3. Espacio inferior para el footer
-- Asegurar que el contenido principal tenga `pb-40 sm:pb-24` para que el footer fijo no tape el último contenido en móvil (donde el footer será más alto al apilarse)
+En la función `updateShareDocument`:
+- Capturar `{ error }` en la llamada `.update()` de documents (línea 700) y lanzar si hay error
+- Capturar `{ error }` en la llamada `.insert()` de content_calendar_edits (línea 710) (menos crítico, solo log)
+- Hacer lo mismo en el flujo `visibleMonthsChanged === true` para consistencia
 
+### 2. Normalizar la comparación de `visibleMonths`
+
+Asegurar que ambos valores se normalicen antes de comparar:
+- Si `existingVisibleMonths` es `[]` (array vacío), tratarlo como `null`
+- Si `selectedVisibleMonths` incluye todos los meses, tratarlo como `null`
+
+## Detalle técnico
+
+```typescript
+// Línea ~700 - Añadir check de error
+const { error: updateError } = await supabase
+  .from('documents')
+  .update({ 
+    content_json: updatedContentJson, 
+    updated_at: newUpdatedAt,
+    visible_months: visibleMonthsToSave
+  })
+  .eq('id', doc.id);
+
+if (updateError) throw updateError;
+```
+
+```typescript
+// Normalizar visibleMonths antes de comparar
+const normalizedExisting = existingVisibleMonths?.length ? existingVisibleMonths : null;
+const visibleMonthsChanged = JSON.stringify(normalizedExisting) !== JSON.stringify(visibleMonthsToSave);
+```
+
+Estos cambios son solo en `src/pages/CalendarioDetalle.tsx`, sin cambios en backend.
