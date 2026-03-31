@@ -584,7 +584,8 @@ const CalendarioDetalle = () => {
         ? selectedVisibleMonths 
         : null;
       
-      const visibleMonthsChanged = JSON.stringify(existingVisibleMonths) !== JSON.stringify(visibleMonthsToSave);
+      const normalizedExisting = existingVisibleMonths?.length ? existingVisibleMonths : null;
+      const visibleMonthsChanged = JSON.stringify(normalizedExisting) !== JSON.stringify(visibleMonthsToSave);
       
       // Fetch current posts
       const { data: posts } = await supabase
