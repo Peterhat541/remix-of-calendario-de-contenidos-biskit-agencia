@@ -698,7 +698,7 @@ const CalendarioDetalle = () => {
         const doc = existingDocs[0];
         const newUpdatedAt = new Date().toISOString();
         
-        await supabase
+        const { error: updateError } = await supabase
           .from('documents')
           .update({ 
             content_json: updatedContentJson, 
@@ -707,8 +707,10 @@ const CalendarioDetalle = () => {
           })
           .eq('id', doc.id);
 
+        if (updateError) throw updateError;
+
         // Record in history
-        await supabase
+        const { error: editError } = await supabase
           .from('content_calendar_edits')
           .insert([{
             calendar_id: id,
@@ -719,6 +721,8 @@ const CalendarioDetalle = () => {
               posts_count: posts?.length || 0
             }
           }]);
+
+        if (editError) console.warn('Error recording edit:', editError);
 
         setLastDocumentUpdate(newUpdatedAt);
         toast.success('Documento actualizado correctamente');
