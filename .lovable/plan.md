@@ -1,76 +1,56 @@
 
-# Fix: sigue fallando “Actualizar documento”
 
-## Diagnóstico
-Do I know what the issue is? Sí.
+# Fix: Guardado de calendario falla por tamaño excesivo de datos
 
-El error no está en la actualización de `documents` en sí. El flujo falla justo después, cuando `updateShareDocument` intenta guardar el historial en `content_calendar_edits` con `action: 'document_updated'`. La base de datos sigue teniendo un `CHECK` constraint antiguo (`content_calendar_edits_action_check`) que no permite ese valor.
+## Problema raíz
 
-Además, ese constraint también está desalineado con otros valores que ya usa el proyecto:
-- `approved_no_changes`
-- `approval_notification_sent`
-- `approval_notification_error`
-- `feedback_reviewed_approved`
-- `document_updated`
-- `calendar_edited`
+Las imágenes de los posts se almacenan como **datos base64** directamente en el campo `image_url` de `calendar_posts` (promedio 1.3MB por imagen, máximo 3MB). Cuando se guarda el calendario, se construye un JSON con todas las imágenes incluidas y se actualiza el campo `content_json` de `documents`. Con ~20+ posts, este JSON alcanza **20-36MB**, provocando **timeouts** en la base de datos.
 
-Por eso sigue saliendo el toast genérico “Error al actualizar el documento”: el `catch` engloba tanto la actualización del documento como el registro del historial.
-
-## Plan
-
-### 1. Corregir la base de datos
-Crear una migración para reemplazar `content_calendar_edits_action_check` y permitir todos los valores realmente usados por la app y el backend:
-- `created`
-- `updated`
-- `calendar_edited`
-- `pdf_generated`
-- `status_changed`
-- `note_added`
-- `feedback_received`
-- `feedback_reviewed`
-- `feedback_reviewed_approved`
-- `approved_no_changes`
-- `approval_notification_sent`
-- `approval_notification_error`
-- `email_sent`
-- `calendar_sent`
-- `email_error`
-- `document_updated`
-
-### 2. Endurecer `updateShareDocument`
-En `src/pages/CalendarioDetalle.tsx`:
-- separar el error del `UPDATE` real del error del log de historial
-- si el documento se actualiza bien, no marcar toda la acción como fallida solo porque falle `content_calendar_edits`
-- mostrar un error más preciso en consola/toast cuando falle el histórico
-
-Aplicar esto en los dos caminos:
-- actualizar documento existente
-- crear nuevo documento + nuevo enlace cuando cambian los meses visibles
-
-### 3. Alinear tipos del frontend
-Actualizar `src/types/calendarCrm.ts` para que `CalendarEditAction` coincida con los valores válidos de base de datos y no vuelva a haber desfases entre frontend y backend.
-
-### 4. Verificación
-Comprobar después del fix:
-- actualizar documento sin cambiar meses visibles
-- actualizar documento cambiando meses visibles
-- generación de nuevo enlace al cambiar periodo
-- registro correcto del historial sin romper el flujo
-- aprobación desde enlace público sin errores de historial
-
-## Archivos afectados
-- `supabase/migrations/...` nueva migración para `content_calendar_edits_action_check`
-- `src/pages/CalendarioDetalle.tsx`
-- `src/types/calendarCrm.ts`
-
-## Detalle técnico
 ```text
-updateShareDocument()
-  -> UPDATE public.documents
-  -> INSERT INTO public.content_calendar_edits (action='document_updated')
-  -> falla el CHECK constraint
-  -> entra en catch
-  -> aparece "Error al actualizar el documento"
+calendar_posts.image_url → base64 (1-3MB cada uno)
+  ↓ (se copian al guardar)
+documents.content_json → JSON con todos los posts + imágenes → 20-36MB
+  ↓
+UPDATE documents SET content_json = {36MB de JSON}
+  ↓
+Statement timeout → "Error al guardar"
 ```
 
-Es decir: el documento puede llegar a actualizarse, pero el histórico rompe la operación y hace que el botón parezca fallar.
+## Solución
+
+### 1. Subir imágenes al almacenamiento (Storage)
+
+Modificar el flujo de subida de imágenes en `CalendarioEditar.tsx` para que, en vez de guardar el base64 en `image_url`, suba el archivo al bucket `content-calendars` y guarde solo la URL pública.
+
+- Al pegar una imagen del portapapeles o subir un archivo, subirlo a Storage
+- Guardar la URL pública resultante en `image_url` (en vez del base64)
+- Esto reduce cada imagen de ~1-3MB a una URL de ~100 caracteres
+
+### 2. Migrar imágenes existentes
+
+Crear un script/utilidad que recorra los posts existentes con `image_url` de tipo base64 (`data:image/...`), suba cada imagen a Storage y actualice la URL. Esto se puede ejecutar una sola vez.
+
+### 3. Reducir tamaño de `content_json`
+
+Al construir el `content_json` para documentos compartidos, las imágenes ya serán URLs pequeñas en vez de base64, reduciendo el JSON de 20-36MB a menos de 100KB.
+
+## Archivos afectados
+
+- `src/pages/CalendarioEditar.tsx` — modificar el manejo de imágenes para subir a Storage
+- `src/pages/CalendarioDetalle.tsx` — el `updateShareDocument` se beneficia automáticamente al reducirse el tamaño del JSON
+- Posiblemente `src/components/CalendarPostEditor.tsx` — si aquí se maneja la subida de imágenes
+
+## Detalle técnico
+
+```text
+Antes:                              Después:
+clipboard → base64 → image_url     clipboard → Storage → URL → image_url
+file input → base64 → image_url    file input → Storage → URL → image_url
+content_json: 20-36MB              content_json: <100KB
+UPDATE: timeout                    UPDATE: <1 segundo
+```
+
+## Alternativa rápida (temporal)
+
+Si se necesita una solución inmediata sin refactorizar las imágenes, se puede excluir las imágenes base64 del `content_json` al guardar el documento compartido, y cargarlas por separado desde `calendar_posts` al renderizar la vista pública. Esto es menos limpio pero resuelve el timeout de inmediato.
+
