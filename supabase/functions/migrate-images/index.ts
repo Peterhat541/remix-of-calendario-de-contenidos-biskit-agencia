@@ -43,7 +43,7 @@ serve(async (req) => {
       .from("calendar_posts")
       .select("id, calendar_id, image_url, image_source")
       .like("image_url", "data:image/%")
-      .limit(50); // Process 50 at a time
+      .limit(10); // Process 10 at a time to avoid timeout
 
     if (fetchError) throw fetchError;
 
