@@ -11,6 +11,7 @@ import { CalendarPost, getDaysInMonth, getImageUrl } from '@/types/contentCalend
 import { POST_FORMATS, POST_OBJECTIVES } from '@/types/contentProfile';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadImageToStorage } from '@/utils/imageStorageUpload';
 
 interface CalendarPostEditorProps {
   post: CalendarPost;
