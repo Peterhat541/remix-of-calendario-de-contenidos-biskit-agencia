@@ -64,22 +64,24 @@ const CalendarPostEditor = ({
     setIsEditing(false);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target?.result as string;
-        setEditData({
-          ...editData,
-          image: { 
-            source: 'file', 
-            clipboard_data_url: '', 
-            file_url: dataUrl 
-          }
-        });
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    try {
+      toast.loading('Subiendo imagen...', { id: 'img-upload' });
+      const publicUrl = await uploadImageToStorage(file);
+      setEditData(prev => ({
+        ...prev,
+        image: { 
+          source: 'file', 
+          clipboard_data_url: '', 
+          file_url: publicUrl 
+        }
+      }));
+      toast.success('Imagen subida', { id: 'img-upload' });
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast.error('Error al subir la imagen', { id: 'img-upload' });
     }
   };
 
