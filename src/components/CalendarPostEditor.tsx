@@ -11,6 +11,7 @@ import { CalendarPost, getDaysInMonth, getImageUrl } from '@/types/contentCalend
 import { POST_FORMATS, POST_OBJECTIVES } from '@/types/contentProfile';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadImageToStorage } from '@/utils/imageStorageUpload';
 
 interface CalendarPostEditorProps {
   post: CalendarPost;
@@ -63,50 +64,38 @@ const CalendarPostEditor = ({
     setIsEditing(false);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target?.result as string;
-        setEditData({
-          ...editData,
-          image: { 
-            source: 'file', 
-            clipboard_data_url: '', 
-            file_url: dataUrl 
-          }
-        });
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    try {
+      toast.loading('Subiendo imagen...', { id: 'img-upload' });
+      const publicUrl = await uploadImageToStorage(file);
+      setEditData(prev => ({
+        ...prev,
+        image: { 
+          source: 'file', 
+          clipboard_data_url: '', 
+          file_url: publicUrl 
+        }
+      }));
+      toast.success('Imagen subida', { id: 'img-upload' });
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast.error('Error al subir la imagen', { id: 'img-upload' });
     }
   };
 
   const handlePasteImage = useCallback(async (e?: ClipboardEvent) => {
     try {
+      let blob: Blob | null = null;
+
       if (e && e.clipboardData) {
         const items = e.clipboardData.items;
         for (let i = 0; i < items.length; i++) {
           const item = items[i];
           if (item.type.startsWith('image/')) {
-            const blob = item.getAsFile();
-            if (blob) {
-              const reader = new FileReader();
-              reader.onload = (ev) => {
-                const dataUrl = ev.target?.result as string;
-                setEditData(prev => ({
-                  ...prev,
-                  image: { 
-                    source: 'clipboard', 
-                    clipboard_data_url: dataUrl, 
-                    file_url: '' 
-                  }
-                }));
-                toast.success('Imagen pegada');
-              };
-              reader.readAsDataURL(blob);
-              return;
-            }
+            blob = item.getAsFile();
+            break;
           }
         }
       } else {
@@ -114,28 +103,31 @@ const CalendarPostEditor = ({
         for (const item of clipboardItems) {
           const imageType = item.types.find(type => type.startsWith('image/'));
           if (imageType) {
-            const blob = await item.getType(imageType);
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-              const dataUrl = ev.target?.result as string;
-              setEditData(prev => ({
-                ...prev,
-                image: { 
-                  source: 'clipboard', 
-                  clipboard_data_url: dataUrl, 
-                  file_url: '' 
-                }
-              }));
-              toast.success('Imagen pegada');
-            };
-            reader.readAsDataURL(blob);
-            return;
+            blob = await item.getType(imageType);
+            break;
           }
         }
       }
-      toast.error('No hay imagen en el portapapeles');
+
+      if (!blob) {
+        toast.error('No hay imagen en el portapapeles');
+        return;
+      }
+
+      toast.loading('Subiendo imagen...', { id: 'img-paste' });
+      const publicUrl = await uploadImageToStorage(blob as File);
+      setEditData(prev => ({
+        ...prev,
+        image: { 
+          source: 'clipboard', 
+          clipboard_data_url: publicUrl, 
+          file_url: '' 
+        }
+      }));
+      toast.success('Imagen pegada', { id: 'img-paste' });
     } catch (err) {
-      toast.error('No se pudo acceder al portapapeles');
+      console.error('Paste error:', err);
+      toast.error('No se pudo subir la imagen', { id: 'img-paste' });
     }
   }, []);
 
